@@ -132,6 +132,14 @@ document.addEventListener('click', (e) => {
     history.pushState(null, '', `#${targetId}`);
   }
 });
+// Example in public/js/home.js:
+const heroLink = document.getElementById('hero-link');
+if (heroLink) {
+  heroLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    window.location.href = '/read'; // Navigate to reader page
+  });
+}
 // Attach listener to build cards dynamically
 const buildsList = document.getElementById('builds-list');
 if (buildsList) {

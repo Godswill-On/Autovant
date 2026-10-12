@@ -1,10 +1,14 @@
-# Explicit rewrite for admin HTML
-/admin          /admin.html         200
-/admin/*        /admin.html         200
+# Explicit rewrite for admin section
+/admin          /admin/login.html        200
+/admin/*        /admin/login.html        200
 
-# Explicit static asset pass-throughs
-/css/*          /css/:splat         200
-/js/*           /js/:splat          200
+# Standalone pages
+/read           /read.html               200
+/section        /section.html            200
 
-# Catch-all SPA rewrite for index.html
-/*              /index.html         200
+# Static asset pass-throughs
+/css/*          /css/:splat              200
+/js/*           /js/:splat               200
+
+# Catch-all SPA rewrite for home page
+/*              /index.html              200
