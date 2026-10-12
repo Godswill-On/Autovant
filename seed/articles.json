@@ -1,0 +1,73 @@
+[
+  {
+    "id": "seed-exterior-001",
+    "slug": "sample-feature-when-aggression-becomes-design",
+    "title": "Sample feature: When aggression becomes design",
+    "category": "Exterior",
+    "dek": "Sample story. Replace this text from the admin page. A look at how aero, carbon fibre, wheels and paint can read as one design idea.",
+    "cover": "/img/sample-carbon.svg",
+    "featured": true,
+    "status": "published",
+    "createdAt": "2026-10-08T12:00:00.000Z",
+    "updatedAt": "2026-10-08T12:00:00.000Z",
+    "publishedAt": "2026-10-08T12:00:00.000Z",
+    "blocks": [
+      { "type": "heading", "text": "One idea, many parts" },
+      { "type": "text", "text": "This is sample text that shows how a feature turns into book pages. Write your own story in the admin page and this one can be deleted.\n\nAn exterior build is easiest to read when every part answers the same question. A front splitter, a rear wing and a set of forged wheels each add something, but the result only feels designed when they agree with one another.\n\nLook first at the lines that run the length of the body. A good kit follows the car's own shoulder and stance, then adds width where the original shape already wants it. Surfaces should look pulled, not pasted on." },
+      { "type": "image", "src": "/img/sample-paint-wide.svg", "caption": "A two-page spread. Use this layout for wide landscape photographs.", "alt": "Abstract sample image", "layout": "spread", "focus": "center" },
+      { "type": "heading", "text": "Material as a signal" },
+      { "type": "text", "text": "Carbon fibre is the most common material in this kind of work, and it is often shown bare. The weave becomes a texture in its own right, and the way it catches light changes with every angle.\n\nPaint does the opposite job. It gives the whole car one colour to be read by, and it decides how much of the carbon is allowed to show.\n\nWheels sit between the two. Their finish, depth and spoke pattern can quiet a loud body or finish a restrained one." },
+      { "type": "quote", "text": "The best builds look decided, not decorated.", "cite": "Sample pull quote" },
+      { "type": "image", "src": "/img/sample-carbon.svg", "caption": "Sample close-up. Photograph the weave, the edges and the fasteners.", "alt": "Abstract carbon weave", "layout": "fill", "focus": "center" },
+      { "type": "specs", "title": "Spec sheet", "rows": [
+        { "field": "Body kit", "value": "As published by the builder", "source": "Official" },
+        { "field": "Wheels", "value": "Confirmed with the workshop", "source": "Verified" },
+        { "field": "Stance and proportions", "value": "Our design reading", "source": "Our view" }
+      ] }
+    ]
+  },
+  {
+    "id": "seed-interior-001",
+    "slug": "sample-feature-inside-the-bespoke-cabin",
+    "title": "Sample feature: Inside the bespoke cabin",
+    "category": "Interior",
+    "dek": "Sample story. Replace this text from the admin page. Upholstery, stitching, dashboard materials and light, one detail at a time.",
+    "cover": "/img/sample-leather.svg",
+    "featured": false,
+    "status": "published",
+    "createdAt": "2026-10-07T12:00:00.000Z",
+    "updatedAt": "2026-10-07T12:00:00.000Z",
+    "publishedAt": "2026-10-07T12:00:00.000Z",
+    "blocks": [
+      { "type": "text", "text": "This is sample text that shows how a feature turns into book pages. Write your own story in the admin page and this one can be deleted.\n\nA factory cabin is designed for thousands of people. A bespoke one is designed for one. That difference shows up first in the materials, and then in the small decisions that nobody sees until they sit down." },
+      { "type": "heading", "text": "Where the eye lands" },
+      { "type": "text", "text": "Start with the seats. Diamond quilting, perforation and piping each set a different mood, and the stitch colour decides how much of that pattern is shouted and how much is whispered.\n\nThe dashboard is next. Wrapped in leather, finished in carbon or trimmed in metal, it carries the cabin's tone across the full width of the car.\n\nThen comes light. Ambient strips and soft spotlights change how the materials look at night, so a cabin should be photographed in both conditions." },
+      { "type": "image", "src": "/img/sample-leather.svg", "caption": "Sample close-up of quilted leather. Show stitching and edges up close.", "alt": "Abstract quilted leather", "layout": "fill", "focus": "center" },
+      { "type": "text", "text": "Finishing details matter most when they repeat. A stitch colour that appears on the seats, the door cards, the steering wheel and the gear selector tells the reader that one person made every choice.\n\nColour deserves the same discipline. Two tones, a contrast thread and one metal finish are usually enough to build a rich cabin without making it busy.\n\nWhen you write about a cabin, name the materials and say who made them. Readers want to know what they are looking at." },
+      { "type": "specs", "title": "Cabin notes", "rows": [
+        { "field": "Seat upholstery", "value": "As published by the builder", "source": "Official" },
+        { "field": "Stitch colour", "value": "Confirmed with the workshop", "source": "Verified" },
+        { "field": "Overall mood", "value": "Our design reading", "source": "Our view" }
+      ] }
+    ]
+  },
+  {
+    "id": "seed-build-001",
+    "slug": "sample-feature-one-vehicle-two-worlds-of-customization",
+    "title": "Sample feature: One vehicle, two worlds of customization",
+    "category": "Custom Builds",
+    "dek": "Sample story. Replace this text from the admin page. Exterior and interior together, and how they make one cohesive result.",
+    "cover": "/img/sample-paint-wide.svg",
+    "featured": false,
+    "status": "published",
+    "createdAt": "2026-10-06T12:00:00.000Z",
+    "updatedAt": "2026-10-06T12:00:00.000Z",
+    "publishedAt": "2026-10-06T12:00:00.000Z",
+    "blocks": [
+      { "type": "text", "text": "This is sample text that shows how a feature turns into book pages. Write your own story in the admin page and this one can be deleted.\n\nA complete build joins two jobs that are usually done by different people: the body and the cabin. When they agree, the car feels finished. When they do not, it feels like two projects parked together." },
+      { "type": "heading", "text": "Make the two halves agree" },
+      { "type": "text", "text": "Pick one colour story and let it travel. A paint tone can return as a stitch, a trim or a light. A metal finish on the wheels can return on the vents and switches inside.\n\nAsk the same question of both halves: what is the loudest thing here, and is anything else competing with it?" },
+      { "type": "image", "src": "/img/sample-paint-wide.svg", "caption": "Sample photograph. Show the car and its cabin in the same light.", "alt": "Abstract paint sample", "layout": "fit", "focus": "center" }
+    ]
+  }
+]

@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>AUTOVANT</title>
+  <meta name="description" content="Read this AUTOVANT feature as a book.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Hanken+Grotesk:wght@300..600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/book.css">
+</head>
+<body class="reader">
+  <header class="reader-bar">
+    <a class="wordmark" href="/" id="r-home" aria-label="AUTOVANT home">Autovant</a>
+    <span class="reader-title" id="r-title"></span>
+    <a class="reader-close" href="/" id="r-close">Close the book</a>
+  </header>
+
+  <main class="stage" id="stage" aria-label="Story, shown as a book">
+    <div class="book-wrap" id="book-wrap"></div>
+    <p class="reader-note" id="r-note" role="status">Opening the book&hellip;</p>
+  </main>
+
+  <nav class="reader-controls" aria-label="Page controls">
+    <button class="turn" id="btn-prev" type="button" aria-label="Previous page" disabled>&larr;</button>
+    <div class="reader-pos">
+      <span id="r-pos" aria-live="polite">Cover</span>
+      <span class="reader-bar-track" aria-hidden="true"><span class="reader-bar-fill" id="r-fill"></span></span>
+    </div>
+    <button class="turn" id="btn-next" type="button" aria-label="Next page" disabled>&rarr;</button>
+  </nav>
+
+  <noscript><p class="reader-note">This story opens as a book and needs JavaScript. <a href="/">Back to AUTOVANT</a></p></noscript>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/book.js"></script>
+  <script src="/js/reader.js"></script>
+</body>
+</html>
