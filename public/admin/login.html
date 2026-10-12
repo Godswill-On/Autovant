@@ -16,13 +16,20 @@
     <a class="wordmark" href="/">Autovant</a>
     <h1>Editor sign in</h1>
     <p class="login-note">This area is for the AUTOVANT editor only.</p>
+    <form id="login-form">
+  <div class="field">
+    <label for="email">EMAIL</label>
+    <input type="email" id="email" name="email" required placeholder="admin@autovant.com" autocomplete="email">
+  </div>
 
-    <form id="login-form" novalidate>
-      <label class="tag" for="password">Password</label>
-      <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
-      <button class="btn btn--solid" type="submit" id="login-btn">Sign in</button>
-      <p class="form-msg" id="login-msg" role="alert"></p>
-    </form>
+  <div class="field">
+    <label for="password">PASSWORD</label>
+    <input type="password" id="password" name="password" required placeholder="••••••••">
+  </div>
+
+  <button type="submit">SIGN IN</button>
+</form>
+
   </main>
   <script src="/admin/assets/login.js"></script>
   <script type="module" src="/admin/assets/login.js"></script>
