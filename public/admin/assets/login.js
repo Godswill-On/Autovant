@@ -1,37 +1,53 @@
-/* AUTOVANT editor sign-in */
-(function () {
-  'use strict';
-  var form = document.getElementById('login-form');
-  var input = document.getElementById('password');
-  var msg = document.getElementById('login-msg');
-  var btn = document.getElementById('login-btn');
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 
-  form.addEventListener('submit', function (e) {
+// Replace with your actual Supabase Project details from Project Settings > API
+const SUPABASE_URL = 'https://ijfbywnlygjmebblqwrh.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'ijfbywnlygjmebblqwrh';
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+document.addEventListener('DOMContentLoaded', () => {
+  const loginForm = document.getElementById('login-form') || document.querySelector('form');
+
+  if (!loginForm) return;
+
+  loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!input.value) {
-      msg.textContent = 'Enter your password.';
-      input.focus();
+
+    const emailInput = document.getElementById('email') || loginForm.querySelector('input[type="email"]');
+    const passwordInput = document.getElementById('password') || loginForm.querySelector('input[type="password"]');
+
+    const email = emailInput?.value.trim();
+    const password = passwordInput?.value.trim();
+
+    if (!email || !password) {
+      alert('Please enter both email and password.');
       return;
     }
-    btn.disabled = true;
-    msg.textContent = '';
-    fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRF': '1' },
-      body: JSON.stringify({ password: input.value })
-    }).then(function (r) {
-      return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, j: j }; });
-    }).then(function (res) {
-      if (res.ok) {
-        window.location.href = '/admin';
+
+    try {
+      // Authenticate via Supabase Auth
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) {
+        alert('Login failed: ' + error.message);
         return;
       }
-      msg.textContent = res.j.error || 'Could not sign in. Try again.';
-      input.select();
-      btn.disabled = false;
-    }).catch(function () {
-      msg.textContent = 'Could not reach the server. Try again.';
-      btn.disabled = false;
-    });
+
+      // Save token in localStorage for authenticated sessions
+      if (data?.session) {
+        localStorage.setItem('sb_access_token', data.session.access_token);
+      }
+
+      // Redirect to the admin editor dashboard
+      window.location.href = '/admin/editor.html';
+
+    } catch (err) {
+      console.error('Authentication error:', err);
+      alert('An unexpected error occurred during login.');
+    }
   });
-})();
+});
