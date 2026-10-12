@@ -114,3 +114,37 @@
   });
   wireForm();
 })();
+// Ensure "Read the latest" and navigation links unhide sections and scroll smoothly
+document.addEventListener('click', (e) => {
+  const link = e.target.closest('a[href^="#"]');
+  if (!link) return;
+
+  const targetId = link.getAttribute('href').slice(1);
+  const targetSection = document.getElementById(targetId);
+
+  if (targetSection) {
+    e.preventDefault();
+    // Unhide section if hidden
+    targetSection.hidden = false;
+    targetSection.scrollIntoView({ behavior: 'smooth' });
+    
+    // Update hash cleanly without reloading or causing a 404
+    history.pushState(null, '', `#${targetId}`);
+  }
+});
+// Attach listener to build cards dynamically
+const buildsList = document.getElementById('builds-list');
+if (buildsList) {
+  buildsList.addEventListener('click', (e) => {
+    const card = e.target.closest('.build-card, .story-card');
+    if (card) {
+      e.preventDefault();
+      const storyId = card.dataset.storyId;
+      
+      // Call your 3D book modal function from book.js / common.js
+      if (typeof openBookReader === 'function') {
+        openBookReader(storyId);
+      }
+    }
+  });
+}

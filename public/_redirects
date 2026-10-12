@@ -1,5 +1,10 @@
-# Explicit route for the admin panel
-/admin          /admin.html        200
+# Explicit rewrite for admin HTML
+/admin          /admin.html         200
+/admin/*        /admin.html         200
 
-# Handle clean story routes if using index.html or reader page
-/*              /index.html        200
+# Explicit static asset pass-throughs
+/css/*          /css/:splat         200
+/js/*           /js/:splat          200
+
+# Catch-all SPA rewrite for index.html
+/*              /index.html         200
