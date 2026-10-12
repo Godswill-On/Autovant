@@ -1,0 +1,5 @@
+# Explicit route for the admin panel
+/admin          /admin.html        200
+
+# Handle clean story routes if using index.html or reader page
+/*              /index.html        200
