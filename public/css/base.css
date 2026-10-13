@@ -98,6 +98,13 @@ a:hover > .link, .link:hover { border-bottom-color: var(--champagne); }
 .site nav a:hover { color: var(--text); }
 .site nav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--champagne); }
 @media (max-width: 860px) { .site nav { order: 3; flex: 1 1 100%; } }
+/* Phones: show every section link by wrapping, instead of hiding some off-screen */
+@media (max-width: 640px) {
+  .site nav { flex-wrap: wrap; overflow: visible; gap: 2px 20px; }
+  .site nav a { padding-block: 10px; }
+}
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+a, button { -webkit-tap-highlight-color: transparent; }
 
 /* ---------- photo plates and material textures ---------- */
 .photo { position: relative; overflow: hidden; isolation: isolate; margin: 0; background: var(--coal); display: block; }

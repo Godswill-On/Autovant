@@ -191,3 +191,36 @@ label.btn:focus-within { outline: 2px solid var(--champagne); outline-offset: 3p
 .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
 .toast--error { background: #b4452f; color: #fff; }
 @media (prefers-reduced-motion: reduce) { .toast { transition: none; } }
+
+/* ---------- phones and touch screens ---------- */
+@media (pointer: coarse) {
+  .btn { min-height: 44px; }
+  .btn--small { min-height: 40px; }
+  .blk-tools .btn { min-width: 40px; min-height: 40px; }
+  .admin-nav a, .admin-nav button { min-height: 40px; display: inline-flex; align-items: center; }
+  .check input { width: 22px; height: 22px; flex: none; }
+}
+@media (max-width: 720px) {
+  body.admin, body.login-page { min-height: 100dvh; }
+  .admin-top__in { gap: 8px 12px; }
+  .admin-nav { margin-left: 0; width: 100%; gap: 4px 18px; }
+
+  /* Save and Preview stay reachable at the bottom while you write */
+  .page-head__r {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 30;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 10px var(--gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+    background: rgba(13, 12, 11, 0.96);
+    -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    border-top: 1px solid var(--line);
+  }
+  .page-head__r .btn { flex: 1 1 0; padding-inline: 10px; }
+  .page-head__r .dirty { position: absolute; top: -22px; left: var(--gutter); margin: 0; padding: 4px 8px; background: rgba(13, 12, 11, 0.96); }
+  .admin-main { padding-bottom: 140px; }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .side-card { padding: 16px; }
+  .add-btns .btn { flex: 1 1 calc(50% - 8px); }
+}
