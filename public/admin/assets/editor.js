@@ -1,7 +1,7 @@
 /*
  * AUTOVANT editor: write features, upload photos, publish.
  * Everything typed here is put on the page with textContent or value, never innerHTML.
- * Every request carries the X-CSRF header the server checks.
+ * Data and photos go straight to Supabase through AVD (js/data.js); the database rules decide who may write.
  */
 (function () {
   'use strict';
@@ -40,32 +40,16 @@
       ', then come back here and save. Your changes are still on this page.');
   }
 
-  function call(method, url, body, isForm) {
-    var opts = { method: method, headers: { 'X-CSRF': '1' }, credentials: 'same-origin' };
-    if (body && !isForm) {
-      opts.headers['Content-Type'] = 'application/json';
-      opts.body = JSON.stringify(body);
-    } else if (body) {
-      opts.body = body;
-    }
-    return fetch(url, opts).then(function (r) {
-      if (r.status === 401) { sessionEnded(); throw new Error('Your session has ended. Sign in again.'); }
-      return r.json().catch(function () { return {}; }).then(function (j) {
-        if (!r.ok) throw new Error(j.error || 'Something went wrong. Try again.');
-        banner.hidden = true;
-        return j;
-      });
+  // Every editor request goes through here so a lost sign-in is handled in one place.
+  function guard(promise) {
+    return promise.then(function (v) { banner.hidden = true; return v; }, function (e) {
+      if (e && e.status === 401) { sessionEnded(); }
+      throw e;
     });
   }
 
   function uploadFile(file) {
-    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-      return Promise.reject(new Error('Use a JPG, PNG or WebP photo. iPhone HEIC photos need converting first.'));
-    }
-    if (file.size > MAX_BYTES) return Promise.reject(new Error('That photo is larger than 25 MB.'));
-    var fd = new FormData();
-    fd.append('image', file);
-    return call('POST', '/api/admin/upload', fd, true).then(function (j) { return j.url; });
+    return guard(AVD.upload(file));
   }
 
   /* ---------- small UI helpers ---------- */
@@ -316,7 +300,7 @@
       return Promise.reject(new Error('no title'));
     }
     var creating = !current.id;
-    var req = creating ? call('POST', '/api/admin/articles', payload()) : call('PUT', '/api/admin/articles/' + current.id, payload());
+    var req = guard(AVD.adminSave(creating ? null : current.id, payload()));
     return req.then(function (saved) {
       current.id = saved.id;
       current.slug = saved.slug;
@@ -352,7 +336,7 @@
       }
       clearTimeout(timer);
       del.disabled = true;
-      call('DELETE', '/api/admin/articles/' + a.id).then(function () {
+      guard(AVD.adminDelete(a.id)).then(function () {
         row.remove();
         toast('Feature deleted.');
       }).catch(function (e) { del.disabled = false; toast(e.message, 'error'); });
@@ -385,7 +369,7 @@
         h('h1', { text: 'Features' }),
         h('a', { class: 'btn btn--solid', href: '#/new', text: 'New feature' })),
       box);
-    call('GET', '/api/admin/articles').then(function (list) {
+    guard(AVD.adminList()).then(function (list) {
       box.textContent = '';
       if (!list.length) {
         box.append(h('p', { class: 'muted', text: 'No features yet. Choose New feature to write your first one.' }));
@@ -487,7 +471,7 @@
     }
     app.textContent = '';
     app.append(h('p', { class: 'muted', text: 'Loading…' }));
-    call('GET', '/api/admin/articles/' + encodeURIComponent(id)).then(function (a) {
+    guard(AVD.adminGet(id)).then(function (a) {
       current = a;
       dirty = false;
       drawEditor();
@@ -537,8 +521,27 @@
   document.getElementById('signout').addEventListener('click', function () {
     if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
     dirty = false;
-    call('POST', '/api/admin/logout').catch(function () {}).then(function () { window.location.href = '/admin'; });
+    AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin'; });
   });
 
-  route();
+  // CSV download of email sign-ups
+  var csvBtn = document.getElementById('subs-csv');
+  if (csvBtn) {
+    csvBtn.addEventListener('click', function () {
+      guard(AVD.subscribersCsv()).then(function (csv) {
+        var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        var a = h('a', { href: url, download: 'autovant-subscribers.csv' });
+        document.body.append(a);
+        a.click();
+        a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+      }).catch(function (e) { toast(e.message, 'error'); });
+    });
+  }
+
+  // Only open the editor if signed in; otherwise go to the sign-in page.
+  AVD.getSession().then(function (s) {
+    if (!s) { window.location.replace('/admin'); return; }
+    route();
+  }).catch(function () { window.location.replace('/admin'); });
 })();

@@ -1,14 +1,7 @@
-# Explicit rewrite for admin section
-/admin          /admin/login.html        200
-/admin/*        /admin/login.html        200
+# Admin sign-in page
+/admin             /admin/login.html   200
+/admin/            /admin/login.html   200
 
-# Standalone pages
-/read           /read.html               200
-/section        /section.html            200
-
-# Static asset pass-throughs
-/css/*          /css/:splat              200
-/js/*           /js/:splat               200
-
-# Catch-all SPA rewrite for home page
-/*              /index.html              200
+# Clean URLs for features and sections (the page reads the slug from the address)
+/read/*            /read.html          200
+/section/*         /section.html       200

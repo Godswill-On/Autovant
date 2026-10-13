@@ -21,7 +21,7 @@
   title.textContent = cat.name;
   blurb.textContent = cat.blurb;
 
-  AV.api('/api/articles?category=' + encodeURIComponent(cat.name)).then(function (list) {
+  AVD.listPublished(cat.name).then(function (list) {
     if (!list.length) {
       empty.hidden = false;
       empty.textContent = 'No ' + cat.name.toLowerCase() + ' stories are published yet.';

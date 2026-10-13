@@ -1,53 +1,37 @@
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+/* AUTOVANT editor sign-in (Supabase Auth). */
+(function () {
+  'use strict';
 
-// Replace with your actual Supabase Project details from Project Settings > API
-const SUPABASE_URL = 'https://ijfbywnlygjmebblqwrh.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqZmJ5d25seWdqbWViYmxxd3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MTI5OTYsImV4cCI6MjEwNzM4ODk5Nn0.73jEbITrBDxUCeIyMdm9FpCtNHLAE9bc_yzq8V6sutE';
+  var form = document.getElementById('login-form');
+  if (!form) return;
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  var msg = document.createElement('p');
+  msg.className = 'form-msg';
+  msg.setAttribute('role', 'alert');
+  msg.hidden = true;
+  form.append(msg);
 
-document.addEventListener('DOMContentLoaded', () => {
-  const loginForm = document.getElementById('login-form') || document.querySelector('form');
+  function say(text) { msg.textContent = text; msg.hidden = !text; }
 
-  if (!loginForm) return;
+  // Already signed in: go straight to the editor.
+  AVD.getSession().then(function (s) {
+    if (s) window.location.replace('/admin/editor.html');
+  }).catch(function () {});
 
-  loginForm.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', function (e) {
     e.preventDefault();
+    var email = document.getElementById('email').value.trim();
+    var password = document.getElementById('password').value;
+    if (!email || !password) { say('Enter your email and password.'); return; }
 
-    const emailInput = document.getElementById('email') || loginForm.querySelector('input[type="email"]');
-    const passwordInput = document.getElementById('password') || loginForm.querySelector('input[type="password"]');
-
-    const email = emailInput?.value.trim();
-    const password = passwordInput?.value.trim();
-
-    if (!email || !password) {
-      alert('Please enter both email and password.');
-      return;
-    }
-
-    try {
-      // Authenticate via Supabase Auth
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) {
-        alert('Login failed: ' + error.message);
-        return;
-      }
-
-      // Save token in localStorage for authenticated sessions
-      if (data?.session) {
-        localStorage.setItem('sb_access_token', data.session.access_token);
-      }
-
-      // Redirect to the admin editor dashboard
+    var btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    say('');
+    AVD.signIn(email, password).then(function () {
       window.location.href = '/admin/editor.html';
-
-    } catch (err) {
-      console.error('Authentication error:', err);
-      alert('An unexpected error occurred during login.');
-    }
+    }).catch(function (err) {
+      btn.disabled = false;
+      say(/invalid login/i.test(err.message) ? 'That email or password is not right.' : err.message);
+    });
   });
-});
+})();

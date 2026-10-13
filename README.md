@@ -81,17 +81,17 @@ On a wide screen the feature opens as a two-page spread. On a phone it shows one
 
 Text is cut into pages by measuring it at the real page size, so it re-flows if the window is resized.
 
-## Putting it online
+## Putting it online (Netlify + Supabase)
 
-This site saves features and photos as files, so it needs a host that runs Node.js **and** keeps a disk between restarts (a small VPS, or Render, Railway or Fly.io with a persistent volume). Static hosts such as Netlify, GitHub Pages or Vercel will not work, because your features and uploads would be lost.
+The site is now plain static files in `public/`, and Supabase stores everything else:
+features (table `articles`), email sign-ups (table `subscribers`), photos (storage bucket `photos`) and the editor sign-in (Supabase Auth).
 
-On the host:
+1. In Supabase open **SQL Editor**, paste all of `supabase/setup.sql` and run it (once).
+2. In Supabase **Authentication > Users**, create your editor user (email + password). Then in **Authentication > Sign In / Providers**, turn **off** "Allow new users to sign up" so nobody else can become an editor.
+3. Push this folder to GitHub. In Netlify the build command stays empty and the publish directory is `public` (`netlify.toml` already says so).
+4. Open `https://YOUR-SITE.netlify.app/admin` and sign in.
 
-1. Upload this folder (not `node_modules`, not `.env`) and run `npm install` then `npm start`.
-2. Set these as environment settings on the host: `NODE_ENV=production`, `ADMIN_PASSWORD`, `SESSION_SECRET`, and `PORT` if the host asks for one.
-3. Make sure `data/` and `uploads/` sit on the persistent disk.
-4. Use HTTPS (most hosts do this for you). In production mode the login cookie is marked Secure.
-5. Back up `data/` and `uploads/` regularly. They are your whole magazine.
+`server.js`, `.env` and `data/` belong to the old file-based version and are not used on Netlify.
 
 ## How the admin is protected
 

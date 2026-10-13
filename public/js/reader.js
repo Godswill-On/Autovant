@@ -523,8 +523,8 @@
       : Promise.resolve();
 
     Promise.all([
-      AV.api('/api/articles/' + encodeURIComponent(slug)),
-      AV.api('/api/articles').catch(function () { return []; }),
+      AVD.getBySlug(slug),
+      AVD.listPublished().catch(function () { return []; }),
       fontsReady
     ]).then(function (res) {
       article = res[0];

@@ -90,20 +90,14 @@
         return;
       }
       msg.textContent = 'Saving…';
-      fetch('/api/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: input.value })
-      }).then(function (r) {
-        return r.json().then(function (j) { return { ok: r.ok, j: j }; });
-      }).then(function (res) {
-        if (res.ok) { msg.textContent = 'You are on the list. Thank you.'; form.reset(); }
-        else msg.textContent = res.j.error || 'Something went wrong. Try again.';
-      }).catch(function () { msg.textContent = 'Could not reach the server. Try again.'; });
+      AVD.subscribe(input.value).then(function () {
+        msg.textContent = 'You are on the list. Thank you.';
+        form.reset();
+      }).catch(function (e) { msg.textContent = e.message || 'Something went wrong. Try again.'; });
     });
   }
 
-  AV.api('/api/articles').catch(function () { return []; }).then(function (list) {
+  AVD.listPublished().catch(function () { return []; }).then(function (list) {
     var hero = list.filter(function (a) { return a.featured; })[0] || list[0] || null;
     var rest = list.filter(function (a) { return a !== hero; });
     renderCover(hero);
@@ -114,45 +108,3 @@
   });
   wireForm();
 })();
-// Ensure "Read the latest" and navigation links unhide sections and scroll smoothly
-document.addEventListener('click', (e) => {
-  const link = e.target.closest('a[href^="#"]');
-  if (!link) return;
-
-  const targetId = link.getAttribute('href').slice(1);
-  const targetSection = document.getElementById(targetId);
-
-  if (targetSection) {
-    e.preventDefault();
-    // Unhide section if hidden
-    targetSection.hidden = false;
-    targetSection.scrollIntoView({ behavior: 'smooth' });
-    
-    // Update hash cleanly without reloading or causing a 404
-    history.pushState(null, '', `#${targetId}`);
-  }
-});
-// Example in public/js/home.js:
-const heroLink = document.getElementById('hero-link');
-if (heroLink) {
-  heroLink.addEventListener('click', (e) => {
-    e.preventDefault();
-    window.location.href = '/read'; // Navigate to reader page
-  });
-}
-// Attach listener to build cards dynamically
-const buildsList = document.getElementById('builds-list');
-if (buildsList) {
-  buildsList.addEventListener('click', (e) => {
-    const card = e.target.closest('.build-card, .story-card');
-    if (card) {
-      e.preventDefault();
-      const storyId = card.dataset.storyId;
-      
-      // Call your 3D book modal function from book.js / common.js
-      if (typeof openBookReader === 'function') {
-        openBookReader(storyId);
-      }
-    }
-  });
-}

@@ -1,0 +1,9 @@
+# Netlify settings: the site is plain static files in "public"; no build step.
+[build]
+  publish = "public"
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"

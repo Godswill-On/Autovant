@@ -18,7 +18,7 @@
       <span class="admin-badge">Editor</span>
       <nav class="admin-nav" aria-label="Editor">
         <a href="/" target="_blank" rel="noopener">View site</a>
-        <a href="/api/admin/subscribers.csv">Subscribers (CSV)</a>
+        <button type="button" id="subs-csv">Subscribers (CSV)</button>
         <button type="button" id="signout">Sign out</button>
       </nav>
     </div>
@@ -33,7 +33,9 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <noscript><p class="wrap">The editor needs JavaScript.</p></noscript>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
   <script src="/js/common.js"></script>
+  <script src="/js/data.js"></script>
   <script src="/admin/assets/editor.js"></script>
 </body>
 </html>
