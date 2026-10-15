@@ -1,7 +1,6 @@
 import { supabase } from '/js/common.js';
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. Check Auth Session
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
         window.location.href = '/admin/login.html';
@@ -16,55 +15,52 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // 2. Load Existing Issues & Analytics Table
-    loadAdminIssues();
+    loadAdminAnalytics();
 
-    // 3. Handle Form Publishing
-    const uploadForm = document.getElementById('upload-form');
-    if (uploadForm) {
-        uploadForm.addEventListener('submit', async (e) => {
+    const form = document.getElementById('upload-form');
+    if (form) {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-
-            const submitBtn = uploadForm.querySelector('button[type="submit"]');
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Publishing...';
+            const btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Publishing...';
 
             try {
-                const title = document.getElementById('issue-title').value;
+                const title = document.getElementById('issue-title').value.trim();
                 const issueNumber = parseInt(document.getElementById('issue-number').value, 10);
                 const coverFile = document.getElementById('cover-file').files[0];
                 const pdfFile = document.getElementById('pdf-file').files[0];
 
                 if (!coverFile || !pdfFile) {
                     alert('Please select both a cover image and a PDF file.');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Publish Issue';
+                    btn.disabled = false;
+                    btn.textContent = 'Publish Issue';
                     return;
                 }
 
-                // Upload Cover Image to Supabase 'issues' bucket
+                // 1. Upload Cover Image
                 const coverExt = coverFile.name.split('.').pop();
-                const coverFileName = `cover_${Date.now()}.${coverExt}`;
-                const { data: coverData, error: coverError } = await supabase.storage
+                const coverName = `cover_${Date.now()}.${coverExt}`;
+                const { error: coverErr } = await supabase.storage
                     .from('issues')
-                    .upload(coverFileName, coverFile);
+                    .upload(coverName, coverFile);
 
-                if (coverError) throw coverError;
+                if (coverErr) throw new Error('Cover upload failed: ' + coverErr.message);
 
-                const coverUrl = supabase.storage.from('issues').getPublicUrl(coverFileName).data.publicUrl;
+                const coverUrl = supabase.storage.from('issues').getPublicUrl(coverName).data.publicUrl;
 
-                // Upload PDF to Supabase 'issues' bucket
-                const pdfFileName = `pdf_${Date.now()}.pdf`;
-                const { data: pdfData, error: pdfError } = await supabase.storage
+                // 2. Upload PDF File
+                const pdfName = `pdf_${Date.now()}.pdf`;
+                const { error: pdfErr } = await supabase.storage
                     .from('issues')
-                    .upload(pdfFileName, pdfFile);
+                    .upload(pdfName, pdfFile);
 
-                if (pdfError) throw pdfError;
+                if (pdfErr) throw new Error('PDF upload failed: ' + pdfErr.message);
 
-                const pdfUrl = supabase.storage.from('issues').getPublicUrl(pdfFileName).data.publicUrl;
+                const pdfUrl = supabase.storage.from('issues').getPublicUrl(pdfName).data.publicUrl;
 
-                // Insert into Supabase 'issues' table
-                const { error: dbError } = await supabase
+                // 3. Insert into database
+                const { error: dbErr } = await supabase
                     .from('issues')
                     .insert([
                         {
@@ -76,49 +72,49 @@ document.addEventListener('DOMContentLoaded', async () => {
                         }
                     ]);
 
-                if (dbError) throw dbError;
+                if (dbErr) throw new Error('Database insert failed: ' + dbErr.message);
 
                 alert('Issue published successfully!');
-                uploadForm.reset();
-                loadAdminIssues();
+                form.reset();
+                loadAdminAnalytics();
 
             } catch (err) {
                 console.error('Publishing error:', err);
                 alert('Error publishing issue: ' + err.message);
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = 'Publish Issue';
+                btn.disabled = false;
+                btn.textContent = 'Publish Issue';
             }
         });
     }
 });
 
-async function loadAdminIssues() {
+async function loadAdminAnalytics() {
     const tableBody = document.getElementById('admin-issues-table');
     if (!tableBody) return;
 
     const { data: issues, error } = await supabase
         .from('issues')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('issue_number', { ascending: false });
 
     if (error) {
-        console.error('Failed to load issues:', error);
+        tableBody.innerHTML = `<tr><td colspan="2" style="padding: 15px; color: #f87171;">Error: ${error.message}</td></tr>`;
         return;
     }
 
     tableBody.innerHTML = '';
-    if (issues.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="2" style="padding:12px; color: #888;">No issues published yet.</td></tr>';
+    if (!issues || issues.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="2" style="padding: 15px; color: var(--text-muted);">No issues published yet.</td></tr>';
         return;
     }
 
     issues.forEach(issue => {
         const row = document.createElement('tr');
-        row.style.borderBottom = '1px solid rgba(255, 255, 255, 0.1)';
+        row.style.borderBottom = '1px solid var(--border)';
         row.innerHTML = `
-            <td style="padding:12px; font-weight:600;">Issue #${issue.issue_number}: ${issue.title}</td>
-            <td style="padding:12px; color:#F1A139; font-weight:bold;">${issue.views_count || 0} views</td>
+            <td style="padding: 12px; font-weight: 500;">Issue #${issue.issue_number}: ${issue.title}</td>
+            <td style="padding: 12px; color: #c084fc; font-weight: bold;">${issue.views_count || 0} views</td>
         `;
         tableBody.appendChild(row);
     });
