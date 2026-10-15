@@ -2,53 +2,60 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>HOLIX Admin — Issue Upload & Analytics</title>
+    <title>HOLIX Admin — Magazine Management</title>
     <link rel="stylesheet" href="/css/base.css">
     <link rel="stylesheet" href="/admin/assets/admin.css">
 </head>
 <body>
     <header class="site-header">
         <a href="/admin/editor.html" class="logo-text">HOLIX ADMIN</a>
-        <button id="logout-btn" class="btn-primary" style="background:#333;">Logout</button>
+        <button id="logout-btn" class="btn-primary" style="background: #2a1b3d; padding: 8px 16px;">Logout</button>
     </header>
 
-    <main class="admin-container" style="padding: 40px 5%;">
-        <h2>Magazine Management & Analytics</h2>
-        <p style="color: var(--text-muted); margin-bottom: 24px;">Upload new PDF issues and monitor real-time read counts.</p>
-        
-        <div class="admin-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 40px;">
-            <form id="upload-form" style="background:var(--card-bg); padding:24px; border:1px solid var(--border-color); border-radius:8px;">
-                <h3>Upload New Issue (PDF/Image)</h3>
-                <div style="margin-top: 16px;">
-                    <label>Issue Title</label>
-                    <input type="text" id="issue-title" required style="width:100%; padding:8px; margin-top:6px;">
+    <main class="container">
+        <section class="hero" style="text-align: left; margin-bottom: 30px;">
+            <h1>Magazine Management</h1>
+            <p>Upload new PDF issues and monitor real-time read counts.</p>
+        </section>
+
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 30px; align-items: start;">
+            <form id="upload-form" style="background: var(--bg-card); padding: 25px; border: 1px solid var(--border); border-radius: 12px;">
+                <h3 style="margin-bottom: 20px;">Upload New Issue (PDF/Image)</h3>
+                
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Issue Title</label>
+                    <input type="text" id="issue-title" required style="width: 100%; padding: 10px; background: #120c1f; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 </div>
-                <div style="margin-top: 16px;">
-                    <label>Issue Number</label>
-                    <input type="number" id="issue-number" required style="width:100%; padding:8px; margin-top:6px;">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Issue Number</label>
+                    <input type="number" id="issue-number" required style="width: 100%; padding: 10px; background: #120c1f; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 </div>
-                <div style="margin-top: 16px;">
-                    <label>Cover Image</label>
-                    <input type="file" id="cover-file" accept="image/*" required style="width:100%; margin-top:6px;">
+
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Cover Image</label>
+                    <input type="file" id="cover-file" accept="image/*" required style="width: 100%; padding: 8px; background: #120c1f; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 </div>
-                <div style="margin-top: 16px;">
-                    <label>Issue PDF File</label>
-                    <input type="file" id="pdf-file" accept="application/pdf" required style="width:100%; margin-top:6px;">
+
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Issue PDF File</label>
+                    <input type="file" id="pdf-file" accept="application/pdf" required style="width: 100%; padding: 8px; background: #120c1f; border: 1px solid var(--border); color: #fff; border-radius: 6px;">
                 </div>
-                <button type="submit" class="btn-primary" style="margin-top:24px; width:100%;">Publish Issue</button>
+
+                <button type="submit" class="btn-primary" style="width: 100%;">Publish Issue</button>
             </form>
 
-            <div class="analytics-panel" style="background:var(--card-bg); padding:24px; border:1px solid var(--border-color); border-radius:8px;">
-                <h3>Published Issues View Analytics</h3>
-                <table style="width:100%; margin-top:16px; border-collapse: collapse;">
+            <div style="background: var(--bg-card); padding: 25px; border: 1px solid var(--border); border-radius: 12px;">
+                <h3 style="margin-bottom: 20px;">Published Issues View Analytics</h3>
+                <table style="width: 100%; border-collapse: collapse;">
                     <thead>
-                        <tr style="border-bottom: 1px solid var(--border-color); text-align: left;">
-                            <th style="padding: 8px;">Issue Title</th>
-                            <th style="padding: 8px;">Views 👁️</th>
+                        <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                            <th style="padding: 10px;">Issue Title</th>
+                            <th style="padding: 10px;">Views 👁️</th>
                         </tr>
                     </thead>
                     <tbody id="admin-issues-table">
-                        <!-- Dynamically populated view counts -->
+                        <tr><td colspan="2" style="padding: 15px; color: var(--text-muted);">Loading analytics...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -56,6 +63,6 @@
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/admin/assets/editor.js"></script>
+    <script type="module" src="/admin/assets/editor.js"></script>
 </body>
 </html>
