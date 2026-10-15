@@ -1,146 +1,45 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>AUTOVANT: Beyond the factory</title>
-  <meta name="description" content="AUTOVANT is a design publication for custom cars: exterior builds, bespoke cabins, materials and the workshops behind them.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..700;1,6..96,400..700&family=Hanken+Grotesk:wght@300..600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-  <link rel="stylesheet" href="/css/base.css">
-  <link rel="stylesheet" href="/css/home.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HOLIX Magazine — Explore. Create. Evolve.</title>
+    <link rel="stylesheet" href="/css/base.css">
+    <link rel="stylesheet" href="/css/home.css">
 </head>
 <body>
-  <a class="skip" href="#main">Skip to content</a>
-  <header id="site-header"></header>
+    <header class="site-header">
+        <a href="/" class="logo-text">HOLIX MAGAZINE</a>
+        <nav class="site-nav">
+            <a href="#issues">Issues</a>
+            <a href="#feature-fridays">Feature Fridays</a>
+            <a href="/admin/login.html" style="color: var(--text-muted); font-size: 0.85rem;">Admin</a>
+        </nav>
+    </header>
 
-  <main id="main">
-    <section class="hero">
-      <div class="wrap">
-        <div class="hero-grid">
-          <div>
-            <span class="tag">Exterior &middot; Interior &middot; Custom builds</span>
-            <h1>Beyond the <em>factory.</em></h1>
-          </div>
-          <div class="intro">
-            <p>AUTOVANT is a design publication for custom cars. We cover exterior builds, bespoke cabins, materials and the workshops behind them, with photography given the room it deserves.</p>
-            <a class="link" id="hero-link" href="#builds">Read the latest</a>
-          </div>
-        </div>
+    <main class="container" style="padding: 40px 5%;">
+        <section class="hero" style="text-align: center; margin-bottom: 60px;">
+            <h1 style="font-size: 3rem; font-weight: 800; margin-bottom: 12px;">Explore. Create. Evolve.</h1>
+            <p style="color: var(--text-muted); font-size: 1.1rem;">A curated digital art & creativity publication.</p>
+        </section>
 
-        <a class="photo tx-carbon cover" id="cover" href="#builds">
-          <svg class="sweep" viewBox="0 0 1600 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            <defs>
-              <linearGradient id="sg" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0" style="stop-color:#cfba8f;stop-opacity:0"/>
-                <stop offset="0.35" style="stop-color:#cfba8f;stop-opacity:0.9"/>
-                <stop offset="1" style="stop-color:#cfba8f;stop-opacity:0.15"/>
-              </linearGradient>
-            </defs>
-            <path pathLength="1" d="M-40 470 C 260 450, 430 270, 820 245 C 1120 228, 1380 330, 1660 380"/>
-            <path pathLength="1" d="M-40 540 C 360 520, 640 400, 980 392 C 1260 386, 1470 440, 1660 470"/>
-            <path class="thin" pathLength="1" d="M220 560 C 520 470, 760 330, 1010 320"/>
-          </svg>
-          <span class="cap">
-            <span class="tag" id="cover-tag">Issue in production</span>
-            <strong id="cover-title">The first features are on their way</strong>
-          </span>
-        </a>
-      </div>
-    </section>
-
-    <section class="section" id="builds" hidden>
-      <div class="wrap">
-        <div class="sec-head">
-          <h2>Featured builds</h2>
-          <span class="tag">Latest features</span>
-        </div>
-        <div class="builds" id="builds-list"></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap">
-        <div class="sec-head">
-          <h2>Two ways in</h2>
-          <span class="tag">Exterior &amp; Interior</span>
-        </div>
-        <div class="diptych" id="diptych"></div>
-      </div>
-    </section>
-
-    <section class="section" id="standard">
-      <div class="wrap">
-        <div class="standard">
-          <div class="standard-copy">
-            <span class="tag">Editorial standard</span>
-            <h2>Specs, sourced.</h2>
-            <p>Every build we publish separates three things: what the maker published, what we confirmed, and what we think. Each line of a spec sheet carries its source, so readers know which is which.</p>
-          </div>
-          <div class="sheet">
-            <div class="sheet-head">How a spec sheet reads</div>
-            <div class="sheet-row">
-              <div><span class="k">Body kit</span><span class="v">As published by the builder</span></div>
-              <span class="chip">Official</span>
+        <section id="issues" class="content-section" style="margin-bottom: 60px;">
+            <h2>Published Issues</h2>
+            <div id="issues-grid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 20px;">
+                <!-- Dynamically loaded issues grid -->
             </div>
-            <div class="sheet-row">
-              <div><span class="k">Cabin materials</span><span class="v">Confirmed with the workshop</span></div>
-              <span class="chip chip--verified">Verified</span>
+        </section>
+
+        <section id="feature-fridays" class="content-section">
+            <h2>Feature Fridays</h2>
+            <div id="ff-grid" class="grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 20px;">
+                <!-- Dynamically loaded Feature Fridays grid -->
             </div>
-            <div class="sheet-row">
-              <div><span class="k">Stance and proportions</span><span class="v">Our design reading</span></div>
-              <span class="chip chip--view">Our view</span>
-            </div>
-            <div class="sheet-foot">Photographs are owned, licensed or published with permission. Sponsored content is always labelled.</div>
-          </div>
-        </div>
-      </div>
-    </section>
+        </section>
+    </main>
 
-    <section class="section">
-      <div class="wrap">
-        <div class="sec-head">
-          <h2>More from AUTOVANT</h2>
-          <span class="tag">Sections</span>
-        </div>
-        <div class="index" id="index"></div>
-      </div>
-    </section>
-
-    <section class="section" id="latest" hidden>
-      <div class="wrap">
-        <div class="sec-head">
-          <h2>Latest stories</h2>
-          <span class="tag">Open any story as a book</span>
-        </div>
-        <div class="latest" id="latest-list"></div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="wrap launch">
-        <div>
-          <h2>Be first to read the next issue.</h2>
-          <p>Leave your email and we will write when new features are published.</p>
-        </div>
-        <form id="launch" novalidate>
-          <label class="tag" for="email">Email address</label>
-          <div class="field">
-            <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
-            <button type="submit">Join the list</button>
-          </div>
-          <p class="msg" id="msg" role="status"></p>
-        </form>
-      </div>
-    </section>
-  </main>
-
-  <footer id="site-footer"></footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
-  <script src="/js/common.js"></script>
-  <script src="/js/data.js"></script>
-  <script src="/js/home.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/common.js"></script>
+    <script src="/js/home.js"></script>
 </body>
 </html>
