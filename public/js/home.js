@@ -1,110 +1,38 @@
-/* AUTOVANT homepage: fills the page from the features you publish */
-(function () {
-  'use strict';
-  var h = AV.h;
-  AV.mountChrome('');
+import { supabase } from '/js/common.js';
 
-  function latestIn(list, category) {
-    return list.filter(function (a) { return a.category === category; })[0] || null;
-  }
+document.addEventListener('DOMContentLoaded', async () => {
+    const issuesGrid = document.getElementById('issues-grid');
+    if (!issuesGrid) return;
 
-  function renderCover(hero) {
-    var cover = document.getElementById('cover');
-    var link = document.getElementById('hero-link');
-    if (!hero) {
-      cover.removeAttribute('href');
-      link.hidden = true;
-      return;
-    }
-    cover.href = '/read/' + hero.slug;
-    cover.setAttribute('data-book', '');
-    link.href = '/read/' + hero.slug;
-    link.setAttribute('data-book', '');
-    link.textContent = 'Open the cover story';
-    document.getElementById('cover-tag').textContent = 'Cover story · ' + hero.category;
-    document.getElementById('cover-title').textContent = hero.title;
-    if (hero.cover) {
-      cover.classList.add('has-img');
-      cover.insertBefore(h('img', { src: hero.cover, alt: '' }), cover.firstChild);
-    }
-  }
+    const { data: issues, error } = await supabase
+        .from('issues')
+        .select('*')
+        .order('issue_number', { ascending: false });
 
-  function renderBuilds(rest) {
-    var picks = rest.slice(0, 3);
-    if (!picks.length) return;
-    var box = document.getElementById('builds-list');
-    picks.forEach(function (a, i) { box.append(AV.card(a, i === 0)); });
-    document.getElementById('builds').hidden = false;
-  }
-
-  function renderDiptych(list) {
-    var box = document.getElementById('diptych');
-    ['Exterior', 'Interior'].forEach(function (name) {
-      var c = AV.catByName(name);
-      var latest = latestIn(list, name);
-      var panel = h('a', { class: 'photo panel ' + c.tx, href: '/section/' + c.slug },
-        latest && latest.cover ? h('img', { src: latest.cover, alt: '' }) : null,
-        h('div', { class: 'panel-text' },
-          h('span', { class: 'tag', text: 'Section' }),
-          h('h3', { text: name }),
-          h('p', { text: c.blurb }),
-          h('span', { class: 'link', text: 'See all ' + name.toLowerCase() + ' stories' })
-        )
-      );
-      box.append(panel);
-    });
-  }
-
-  function renderIndex(list) {
-    var box = document.getElementById('index');
-    ['Custom Builds', 'Designers & Brands', 'Concepts', 'Features'].forEach(function (name) {
-      var c = AV.catByName(name);
-      var n = list.filter(function (a) { return a.category === name; }).length;
-      var latest = latestIn(list, name);
-      box.append(h('a', { class: 'tile', href: '/section/' + c.slug },
-        h('div', { class: 'photo ' + c.tx }, latest && latest.cover ? h('img', { src: latest.cover, alt: '', loading: 'lazy' }) : null),
-        h('h3', { text: name }),
-        h('p', { text: c.blurb }),
-        h('span', { class: 'meta', text: n === 1 ? '1 story' : n + ' stories' })
-      ));
-    });
-  }
-
-  function renderLatest(rest) {
-    var more = rest.slice(3, 11);
-    if (!more.length) return;
-    var box = document.getElementById('latest-list');
-    more.forEach(function (a) { box.append(AV.row(a)); });
-    document.getElementById('latest').hidden = false;
-  }
-
-  function wireForm() {
-    var form = document.getElementById('launch');
-    var input = document.getElementById('email');
-    var msg = document.getElementById('msg');
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      if (!input.value || !input.checkValidity()) {
-        msg.textContent = 'Enter a valid email address.';
-        input.focus();
+    if (error) {
+        console.error('Error fetching issues:', error);
         return;
-      }
-      msg.textContent = 'Saving…';
-      AVD.subscribe(input.value).then(function () {
-        msg.textContent = 'You are on the list. Thank you.';
-        form.reset();
-      }).catch(function (e) { msg.textContent = e.message || 'Something went wrong. Try again.'; });
-    });
-  }
+    }
 
-  AVD.listPublished().catch(function () { return []; }).then(function (list) {
-    var hero = list.filter(function (a) { return a.featured; })[0] || list[0] || null;
-    var rest = list.filter(function (a) { return a !== hero; });
-    renderCover(hero);
-    renderBuilds(rest);
-    renderDiptych(list);
-    renderIndex(list);
-    renderLatest(rest);
-  });
-  wireForm();
-})();
+    issuesGrid.innerHTML = '';
+    if (issues.length === 0) {
+        issuesGrid.innerHTML = '<p style="color: #aaa;">No issues published yet. Stay tuned!</p>';
+        return;
+    }
+
+    issues.forEach(issue => {
+        const card = document.createElement('a');
+        card.href = `/read.html?id=${issue.id}`;
+        card.className = 'issue-card';
+        card.innerHTML = `
+            <div class="card-image-wrap">
+                <img src="${issue.cover_image_url}" alt="${issue.title}" />
+            </div>
+            <div class="card-info">
+                <h3>Issue #${issue.issue_number} — ${issue.title}</h3>
+                <span class="read-link">Read Issue &rarr;</span>
+            </div>
+        `;
+        issuesGrid.appendChild(card);
+    });
+});
