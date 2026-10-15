@@ -4,6 +4,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const issuesGrid = document.getElementById('issues-grid');
     if (!issuesGrid) return;
 
+    console.log("Fetching issues for public page...");
+
     try {
         const { data: issues, error } = await supabase
             .from('issues')
@@ -11,15 +13,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             .order('issue_number', { ascending: false });
 
         if (error) {
-            console.error('Supabase error fetching issues:', error.message);
-            issuesGrid.innerHTML = `<p style="color: #f87171;">Failed to load issues: ${error.message}</p>`;
+            console.error('Supabase fetch error:', error);
+            issuesGrid.innerHTML = `<p style="color: #f87171;">Error loading issues: ${error.message}</p>`;
             return;
         }
+
+        console.log("Fetched issues data:", issues);
 
         issuesGrid.innerHTML = '';
         
         if (!issues || issues.length === 0) {
-            issuesGrid.innerHTML = '<p style="color: var(--text-muted);">No issues published yet. Check back soon!</p>';
+            issuesGrid.innerHTML = '<p style="color: var(--text-muted);">No issues published yet.</p>';
             return;
         }
 
@@ -40,6 +44,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
 
     } catch (err) {
-        console.error('Unexpected error loading home issues:', err);
+        console.error('Unexpected error in home.js:', err);
     }
 });
