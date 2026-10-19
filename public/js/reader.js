@@ -544,43 +544,59 @@ function recordView(articleId) {
     } catch (e) { }
   }
 
-  function start() {
+function start() {
     var fontsReady = (document.fonts && document.fonts.ready)
       ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1800); })])
       : Promise.resolve();
 
-    Promise.all([
-      AVD.getBySlug(slug),
-      AVD.listPublished().catch(function () { return []; }),
-      fontsReady
-    ]).then(function (res) {
-      article = res[0];
-      related = res[1].filter(function (a) { return a.slug !== article.slug; });
-      
-      document.title = article.title + ' | HOLIX';
-      if (titleEl) titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
+    // 1. Fetch the main issue first so related list errors cannot block the reader
+    AVD.getBySlug(slug)
+      .then(function (resArticle) {
+        article = resArticle;
 
-      if (article && article.id) {
-        recordView(article.id);
-      }
+        document.title = article.title + ' | HOLIX';
+        if (titleEl) titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
 
-      setBackLink();
-      wire();
-      build(0, null);
-      if (note) note.textContent = 'Opening the book…';
-      setTimeout(function () {
-        if (!book || book.state !== 0) return;
-        book.goTo(1, true);
-        if (note) {
-          note.textContent = book.spread
-            ? 'Click a page, press ← →, or swipe to turn the pages.'
-            : 'Tap the page edges or swipe to turn the pages.';
+        if (article && article.id) {
+          recordView(article.id);
         }
-      }, reduced ? 0 : 1100);
-    }).catch(function (err) {
-      if (err && err.status === 404) showError('Issue not found', 'This issue is not published, or the link is wrong.');
-      else showError('Could not open the story', 'Check your connection and try again.');
-    });
+
+        setBackLink();
+        wire();
+
+        // 2. Safely attempt to fetch related articles without crashing if it fails
+        AVD.listPublished()
+          .then(function (list) {
+            related = (list || []).filter(function (a) { return a.slug !== article.slug; });
+          })
+          .catch(function () {
+            related = [];
+          })
+          .then(function () {
+            return fontsReady;
+          })
+          .then(function () {
+            build(0, null);
+            if (note) note.textContent = 'Opening the issue…';
+            setTimeout(function () {
+              if (!book || book.state !== 0) return;
+              book.goTo(1, true);
+              if (note) {
+                note.textContent = book.spread
+                  ? 'Click a page, press ← →, or swipe to turn the pages.'
+                  : 'Tap the page edges or swipe to turn the pages.';
+              }
+            }, reduced ? 0 : 1100);
+          });
+      })
+      .catch(function (err) {
+        console.error('Reader Error:', err);
+        if (err && (err.status === 404 || err.code === 'PGRST116')) {
+          showError('Issue not found', 'This issue is not published, or the link is wrong.');
+        } else {
+          showError('Could not open the story', (err && err.message) ? err.message : 'Check your connection and try again.');
+        }
+      });
   }
 
   start();
