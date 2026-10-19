@@ -144,28 +144,30 @@
   var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
   var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
 
-  input.addEventListener('change', function () {
-    var file = input.files && input.files[0];
-    if (!file) return;
+  // When a PDF is selected and uploaded:
+AVD.upload(pdfFile).then(function(pdfUrl) {
+  // Extract a clean title from the filename (e.g., "Holix Issue 03" from "Holix_Issue_03.pdf")
+  var originalName = pdfFile.name.replace(/\.[^/.]+$/, "");
+  var cleanTitle = originalName.replace(/[-_]/g, ' ');
 
-    var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-    status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
+  var issueData = {
+    title: cleanTitle,
+    category: 'Issues',
+    status: 'published',
+    pdf_url: pdfUrl,
+    dek: 'Digital magazine issue',
+    blocks: []
+  };
 
-    uploadFile(file)
-      .then(function (url) {
-        onChange(url);
-        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB)';
-        pick.textContent = 'Replace PDF Issue';
-        toast('PDF magazine uploaded successfully!');
-      })
-      .catch(function (e) {
-        status.textContent = 'Upload failed: ' + (e.message || 'Server error');
-        toast('PDF Upload failed: ' + e.message, 'error');
-      })
-      .then(function () {
-        input.value = '';
-      });
-  });
+  // Automatically save the issue to Supabase immediately!
+  return AVD.adminSave(null, issueData);
+}).then(function(savedIssue) {
+  // Show success and refresh or redirect to preview
+  console.log('Issue automatically created and saved:', savedIssue);
+  window.location.href = '/book.html?slug=' + savedIssue.slug;
+}).catch(function(err) {
+  alert('Upload/Auto-save failed: ' + err.message);
+});
 
   return h('div', { class: 'pdf-uploader' }, pick, status);
 }
