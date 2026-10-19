@@ -307,21 +307,29 @@
   }
 
   function upload(file) {
-    // Update the validation check to allow PDFs:
-var validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
-if (!validTypes.includes(file.type)) {
-  return Promise.reject(new Error('Use a JPG, PNG, WebP photo or a PDF document.'));
+   // Inside public/js/data.js
+function upload(file) {
+  if (!file) return Promise.reject(new Error('No file provided.'));
+
+  // Allow images and PDFs
+  var isImage = file.type.indexOf('image/') === 0;
+  var isPdf = file.type === 'application/pdf';
+
+  if (!isImage && !isPdf) {
+    return Promise.reject(new Error('File must be an image (JPG, PNG, WebP) or a PDF.'));
+  }
+
+  var path = (isPdf ? 'pdf/' : 'photos/') + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+  return supabase.storage.from('media').upload(path, file, {
+    cacheControl: '3600',
+    upsert: true
+  }).then(function (res) {
+    if (res.error) throw res.error;
+    var pub = supabase.storage.from('media').getPublicUrl(path);
+    return pub.data.publicUrl;
+  });
 }
-    if (file.size > MAX_BYTES) return Promise.reject(fail('That photo is larger than 25 MB.', 400));
-    return authed(function () {
-      return prepare(file).then(function (p) {
-        var name = randomName() + '.' + p.ext;
-        return sb.storage.from(BUCKET).upload(name, p.body, { contentType: p.type, cacheControl: '31536000', upsert: false }).then(function (res) {
-          if (res.error) throw explain(res.error, 'The photo could not be uploaded. Try again.');
-          return sb.storage.from(BUCKET).getPublicUrl(name).data.publicUrl;
-        });
-      });
-    });
   }
 
   /* ---------- editor: subscribers ---------- */
