@@ -1,13 +1,13 @@
-/* AUTOVANT shared helpers: categories, small DOM builder, header, footer, cards */
+/* HOLIX shared helpers: categories, small DOM builder, header, footer, cards */
 (function () {
   'use strict';
 
   var CATS = [
-    { name: 'Exterior', slug: 'exterior', tx: 'tx-carbon', blurb: 'Body kits, paintwork, wheels, carbon fibre, and styling.' },
-    { name: 'Interior', slug: 'interior', tx: 'tx-leather', blurb: 'Upholstery, dashboards, materials, lighting, and bespoke cabins.' },
-    { name: 'Custom Builds', slug: 'custom-builds', tx: 'tx-paint', blurb: 'Complete vehicle transformations and detailed build showcases.' },
-    { name: 'Designers & Brands', slug: 'designers-brands', tx: 'tx-metal', blurb: 'Features on customization houses, designers, and workshops.' },
-    { name: 'Concepts', slug: 'concepts', tx: 'tx-grid', blurb: 'Experimental designs, futuristic interiors, and concept vehicles.' },
+    { name: 'Visual Art', slug: 'visual-art', tx: 'tx-carbon', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
+    { name: 'Installations', slug: 'installations', tx: 'tx-leather', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
+    { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-paint', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
+    { name: 'Exhibitions', slug: 'designers-brands', tx: 'tx-metal', blurb: 'Features on milestone shows, curators, and cultural institutions.' },
+    { name: 'Concepts', slug: 'concepts', tx: 'tx-grid', blurb: 'Experimental designs, visionary objects, and futuristic studies.' },
     { name: 'Features', slug: 'features', tx: 'tx-leather', blurb: 'In-depth editorial stories and special digital editions.' }
   ];
 
@@ -92,7 +92,7 @@
       });
       header.className = 'site';
       header.append(h('div', { class: 'wrap bar' },
-        h('a', { class: 'wordmark', href: '/', 'aria-label': 'AUTOVANT home', text: 'Autovant' }),
+        h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX home', text: 'HOLIX' }),
         nav
       ));
     }
@@ -102,13 +102,13 @@
       CATS.forEach(function (c) { list.append(h('li', null, h('a', { href: '/section/' + c.slug, text: c.name }))); });
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
-          h('a', { class: 'wordmark', href: '/', text: 'Autovant' }),
-          h('p', { class: 'tagline', text: 'Beyond the factory.' })
+          h('a', { class: 'wordmark', href: '/', text: 'HOLIX' }),
+          h('p', { class: 'tagline', text: 'Beyond the canvas.' })
         ),
         h('div', null, h('span', { class: 'tag', text: 'Sections' }), list),
         h('div', null,
           h('span', { class: 'tag', text: 'Editorial' }),
-          h('p', { text: 'Editorial independence comes first. Sponsored content is always labelled. © ' + new Date().getFullYear() + ' AUTOVANT.' })
+          h('p', { text: 'Editorial independence comes first. Sponsored content is always labelled. © ' + new Date().getFullYear() + ' HOLIX.' })
         )
       ));
     }

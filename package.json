@@ -1,8 +1,8 @@
 {
-  "name": "autovant",
+  "name": "holix",
   "version": "1.0.0",
   "private": true,
-  "description": "AUTOVANT: a book-style car design magazine with a private admin page.",
+  "description": "HOLIX: a book-style contemporary art and design magazine with a private admin page.",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
