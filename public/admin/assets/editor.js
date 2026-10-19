@@ -131,26 +131,36 @@
 
   /* ---------- PDF uploader UI ---------- */
 
-  function pdfUploader(pdfUrl, onChange) {
-    var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
-    var input = h('input', { type: 'file', accept: 'application/pdf', class: 'file-input' });
-    var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
+ function pdfUploader(pdfUrl, onChange) {
+  var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
+  var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
+  var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
 
-    input.addEventListener('change', function () {
-      var file = input.files && input.files[0];
-      if (!file) return;
-      status.textContent = 'Uploading PDF...';
-      uploadFile(file).then(function (url) {
+  input.addEventListener('change', function () {
+    var file = input.files && input.files[0];
+    if (!file) return;
+
+    var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
+
+    uploadFile(file)
+      .then(function (url) {
         onChange(url);
-        status.textContent = 'PDF attached: ' + file.name;
+        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB)';
         pick.textContent = 'Replace PDF Issue';
-      }).catch(function (e) {
-        status.textContent = 'Upload failed: ' + e.message;
-      }).then(function () { input.value = ''; });
-    });
+        toast('PDF magazine uploaded successfully!');
+      })
+      .catch(function (e) {
+        status.textContent = 'Upload failed: ' + (e.message || 'Server error');
+        toast('PDF Upload failed: ' + e.message, 'error');
+      })
+      .then(function () {
+        input.value = '';
+      });
+  });
 
-    return h('div', { class: 'pdf-uploader' }, pick, status);
-  }
+  return h('div', { class: 'pdf-uploader' }, pick, status);
+}
 
   /* ---------- story blocks ---------- */
 

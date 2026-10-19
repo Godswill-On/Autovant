@@ -307,28 +307,34 @@
   }
 
   function upload(file) {
-   // Inside public/js/data.js
 function upload(file) {
-  if (!file) return Promise.reject(new Error('No file provided.'));
+  if (!file) return Promise.reject(new Error('No file selected.'));
 
-  // Allow images and PDFs
+  var isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
   var isImage = file.type.indexOf('image/') === 0;
-  var isPdf = file.type === 'application/pdf';
 
-  if (!isImage && !isPdf) {
-    return Promise.reject(new Error('File must be an image (JPG, PNG, WebP) or a PDF.'));
+  if (!isPdf && !isImage) {
+    return Promise.reject(new Error('Only JPG, PNG, WebP photos or PDF documents are allowed.'));
   }
 
-  var path = (isPdf ? 'pdf/' : 'photos/') + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  // Generate clean storage path
+  var folder = isPdf ? 'pdf/' : 'photos/';
+  var cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+  var path = folder + Date.now() + '_' + cleanName;
 
-  return supabase.storage.from('media').upload(path, file, {
-    cacheControl: '3600',
-    upsert: true
-  }).then(function (res) {
-    if (res.error) throw res.error;
-    var pub = supabase.storage.from('media').getPublicUrl(path);
-    return pub.data.publicUrl;
-  });
+  // Perform Supabase Storage Upload
+  return supabase.storage
+    .from('media')
+    .upload(path, file, {
+      cacheControl: '3600',
+      contentType: isPdf ? 'application/pdf' : file.type,
+      upsert: true
+    })
+    .then(function (result) {
+      if (result.error) throw result.error;
+      var publicData = supabase.storage.from('media').getPublicUrl(path);
+      return publicData.data.publicUrl;
+    });
 }
   }
 
