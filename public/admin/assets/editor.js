@@ -129,6 +129,29 @@
     return h('div', { class: 'uploader' }, preview, h('div', { class: 'up-actions' }, pick, clear), status);
   }
 
+  /* ---------- PDF uploader UI ---------- */
+
+  function pdfUploader(pdfUrl, onChange) {
+    var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
+    var input = h('input', { type: 'file', accept: 'application/pdf', class: 'file-input' });
+    var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
+
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      if (!file) return;
+      status.textContent = 'Uploading PDF...';
+      uploadFile(file).then(function (url) {
+        onChange(url);
+        status.textContent = 'PDF attached: ' + file.name;
+        pick.textContent = 'Replace PDF Issue';
+      }).catch(function (e) {
+        status.textContent = 'Upload failed: ' + e.message;
+      }).then(function () { input.value = ''; });
+    });
+
+    return h('div', { class: 'pdf-uploader' }, pick, status);
+  }
+
   /* ---------- story blocks ---------- */
 
   function newBlock(type) {
@@ -284,6 +307,7 @@
       category: current.category,
       dek: current.dek,
       cover: current.cover,
+      pdf_url: current.pdf_url || '',
       featured: !!current.featured,
       status: current.status,
       blocks: current.blocks
@@ -418,37 +442,8 @@
       var files = [].slice.call(multi.files);
       multi.value = '';
       if (files.length) addPhotos(files);
-      
     });
-    // PDF Upload Trigger
-var pdfBtn = document.getElementById('upload-pdf-btn');
-var pdfInput = document.getElementById('pdf-file-input');
-var pdfStatus = document.getElementById('pdf-status');
-var pdfUrlField = document.getElementById('pdf-url-field');
 
-if (pdfBtn && pdfInput) {
-  pdfBtn.addEventListener('click', function () {
-    pdfInput.click();
-  });
-
-  pdfInput.addEventListener('change', function (e) {
-    var file = e.target.files[0];
-    if (!file) return;
-
-    pdfStatus.textContent = 'Uploading PDF...';
-    
-    var fileName = 'pdf/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-
-    // Upload file directly using Supabase client (AVD)
-    AVD.uploadFile(fileName, file).then(function (publicUrl) {
-      pdfUrlField.value = publicUrl;
-      pdfStatus.textContent = 'PDF Uploaded: ' + file.name;
-      pdfBtn.textContent = 'Replace PDF';
-    }).catch(function (err) {
-      pdfStatus.textContent = 'Upload failed: ' + err.message;
-    });
-  });
-}
     var addBar = h('div', { class: 'add-bar' },
       h('span', { class: 'tag', text: 'Add to the story' }),
       h('div', { class: 'add-btns' },
@@ -478,6 +473,10 @@ if (pdfBtn && pdfInput) {
             fld('Section', catSel),
             h('label', { class: 'check' }, featured, h('span', { text: 'Make this the cover story on the homepage' }))),
           h('div', { class: 'side-card' },
+            h('span', { class: 'tag', text: 'PDF Magazine (Optional)' }),
+            pdfUploader(current.pdf_url, function (url) { current.pdf_url = url; markDirty(); }),
+            h('p', { class: 'hint', text: 'Upload a complete pre-made PDF issue instead of writing manual blocks.' })),
+          h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'Cover photo' }),
             uploader(current.cover, function (url) { current.cover = url; markDirty(); }, 'Choose cover photo'),
             h('p', { class: 'hint', text: 'Used on the book cover, the homepage and section pages. A tall photo works best.' })),
@@ -495,7 +494,7 @@ if (pdfBtn && pdfInput) {
 
   function showEditor(id) {
     if (!id) {
-      current = { title: '', category: 'Features', dek: '', cover: '', featured: false, status: 'draft', blocks: [] };
+      current = { title: '', category: 'Features', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
       dirty = false;
       drawEditor();
       return;

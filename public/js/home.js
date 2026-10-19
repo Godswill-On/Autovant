@@ -38,26 +38,26 @@
   }
 
   function renderDiptych(list) {
-    var box = document.getElementById('diptych');
-    ['Exterior', 'Interior'].forEach(function (name) {
-      var c = AV.catByName(name);
-      var latest = latestIn(list, name);
-      var panel = h('a', { class: 'photo panel ' + c.tx, href: '/section/' + c.slug },
-        latest && latest.cover ? h('img', { src: latest.cover, alt: '' }) : null,
-        h('div', { class: 'panel-text' },
-          h('span', { class: 'tag', text: 'Section' }),
-          h('h3', { text: name }),
-          h('p', { text: c.blurb }),
-          h('span', { class: 'link', text: 'See all ' + name.toLowerCase() + ' stories' })
-        )
-      );
-      box.append(panel);
-    });
+    var DIPTYCH_CATS = ['Issues', 'Feature Fridays'];
+    var diptychBox = document.getElementById('diptych');
+    if (diptychBox) {
+      diptychBox.textContent = '';
+      DIPTYCH_CATS.forEach(function (catName) {
+        var c = AV.catByName(catName);
+        var card = AV.h('a', { class: 'dip-card ' + c.tx, href: '/section/' + c.slug },
+          AV.h('span', { class: 'tag', text: 'Section' }),
+          AV.h('h3', { text: c.name }),
+          AV.h('p', { text: c.blurb }),
+          AV.h('span', { class: 'link', text: 'See all ' + c.name + ' stories' })
+        );
+        diptychBox.append(card);
+      });
+    }
   }
 
   function renderIndex(list) {
     var box = document.getElementById('index');
-    ['Custom Builds', 'Designers & Brands', 'Concepts', 'Features'].forEach(function (name) {
+    ['Art Work', 'Artists', 'Features'].forEach(function (name) {
       var c = AV.catByName(name);
       var n = list.filter(function (a) { return a.category === name; }).length;
       var latest = latestIn(list, name);

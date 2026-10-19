@@ -3,6 +3,6 @@
     { "source": "/admin", "destination": "/admin/login.html" },
     { "source": "/admin/editor", "destination": "/admin/editor.html" },
     { "source": "/read/:slug*", "destination": "/read.html" },
-    { "source": "/section", "destination": "/section.html" }
+    { "source": "/section/:slug*", "destination": "/section.html" }
   ]
 }
