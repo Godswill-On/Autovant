@@ -1,7 +1,7 @@
 /*
- * AUTOVANT editor: write features, upload photos, publish.
- * Everything typed here is put on the page with textContent or value, never innerHTML.
- * Data and photos go straight to Supabase through AVD (js/data.js); the database rules decide who may write.
+- HOLIX editor: write features, upload photos, publish.
+- Everything typed here is put on the page with textContent or value, never innerHTML.
+- Data and photos go straight to Supabase through AVD (js/data.js); the database rules decide who may write.
  */
 (function () {
   'use strict';
@@ -9,14 +9,13 @@
 
   var CATEGORY_NAMES = AV.CATS.map(function (c) { return c.name; });
   var SOURCES = ['Official', 'Verified', 'Our view'];
-  var TYPE_LABEL = { heading: 'Heading', text: 'Text', image: 'Photo', quote: 'Pull quote', specs: 'Spec sheet' };
+  var TYPE_LABEL = { heading: 'Heading', text: 'Text', image: 'Photo', quote: 'Pull quote', specs: 'Work Specs' };
   var LAYOUTS = [
     ['fit', 'Inline, with the text'],
     ['fill', 'Full page'],
-    ['spread', 'Across two pages (best for wide photos)']
+    ['spread', 'Across two pages (best for wide art photos)']
   ];
   var FOCUS = [['left', 'Left'], ['center', 'Centre'], ['right', 'Right']];
-  var MAX_BYTES = 25 * 1024 * 1024;
 
   var app = document.getElementById('app');
   var toastEl = document.getElementById('toast');
@@ -36,11 +35,10 @@
     banner.hidden = false;
     banner.textContent = '';
     banner.append('Your session has ended. ',
-      h('a', { href: '/admin', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
+      h('a', { href: '/admin/login.html', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
       ', then come back here and save. Your changes are still on this page.');
   }
 
-  // Every editor request goes through here so a lost sign-in is handled in one place.
   function guard(promise) {
     return promise.then(function (v) { banner.hidden = true; return v; }, function (e) {
       if (e && e.status === 401) { sessionEnded(); }
@@ -110,7 +108,7 @@
 
     function show(url) {
       preview.textContent = '';
-      if (url) preview.append(h('img', { src: url, alt: 'Selected photo' }));
+      if (url) preview.append(h('img', { src: url, alt: 'Selected artwork or photo' }));
       else preview.append(h('span', { class: 'muted', text: 'No photo yet' }));
       clear.hidden = !url;
     }
@@ -139,7 +137,7 @@
       case 'text': return { type: 'text', text: '' };
       case 'quote': return { type: 'quote', text: '', cite: '' };
       case 'image': return { type: 'image', src: '', caption: '', alt: '', layout: 'fit', focus: 'center' };
-      default: return { type: 'specs', title: 'Spec sheet', rows: [{ field: '', value: '', source: 'Official' }] };
+      default: return { type: 'specs', title: 'Work specifications', rows: [{ field: '', value: '', source: 'Official' }] };
     }
   }
 
@@ -148,8 +146,8 @@
     function draw() {
       rows.textContent = '';
       b.rows.forEach(function (r) {
-        var name = bindInput(h('input', { type: 'text', maxlength: 80, placeholder: 'Body kit', 'aria-label': 'Spec name' }), r, 'field');
-        var value = bindInput(h('input', { type: 'text', maxlength: 200, placeholder: 'As published by the builder', 'aria-label': 'Spec value' }), r, 'value');
+        var name = bindInput(h('input', { type: 'text', maxlength: 80, placeholder: 'Medium & Materials', 'aria-label': 'Spec name' }), r, 'field');
+        var value = bindInput(h('input', { type: 'text', maxlength: 200, placeholder: 'As stated by the studio or artist', 'aria-label': 'Spec value' }), r, 'value');
         var source = select(SOURCES.map(function (s) { return [s, s]; }), r, 'source');
         source.setAttribute('aria-label', 'Where this fact comes from');
         var del = h('button', { type: 'button', class: 'icon-btn', title: 'Remove row', 'aria-label': 'Remove row', text: '✕' });
@@ -161,11 +159,11 @@
     var add = h('button', { type: 'button', class: 'btn btn--small', text: 'Add a row' });
     add.addEventListener('click', function () { b.rows.push({ field: '', value: '', source: 'Official' }); markDirty(); draw(); });
     return [
-      fld('Sheet title', bindInput(h('input', { type: 'text', maxlength: 80, placeholder: 'Spec sheet' }), b, 'title')),
+      fld('Sheet title', bindInput(h('input', { type: 'text', maxlength: 80, placeholder: 'Work specifications' }), b, 'title')),
       h('div', { class: 'fld' },
         h('span', { class: 'tag', text: 'Rows' }),
         rows,
-        h('span', { class: 'hint', text: 'Label each fact: Official (published by the maker), Verified (you confirmed it), or Our view (your opinion).' })),
+        h('span', { class: 'hint', text: 'Label each detail: Official (stated by artist/studio), Verified (confirmed with gallery/curators), or Our view (curatorial reading).' })),
       add
     ];
   }
@@ -185,7 +183,7 @@
         return [
           uploader(b.src, function (url) { b.src = url; markDirty(); }, 'Choose photo'),
           fld('Caption (optional)', bindInput(h('input', { type: 'text', maxlength: 300 }), b, 'caption')),
-          fld('Description for screen readers', bindInput(h('input', { type: 'text', maxlength: 200 }), b, 'alt'), 'A short sentence about what the photo shows.'),
+          fld('Description for screen readers', bindInput(h('input', { type: 'text', maxlength: 200 }), b, 'alt'), 'A short sentence about what the artwork shows.'),
           h('div', { class: 'two' },
             fld('Layout', select(LAYOUTS, b, 'layout')),
             fld('Keep this part when cropped', select(FOCUS, b, 'focus')))
@@ -241,7 +239,7 @@
   function drawBlocks() {
     blocksBox.textContent = '';
     if (!current.blocks.length) {
-      blocksBox.append(h('p', { class: 'muted empty-blocks', text: 'Your story is empty. Add a heading, some text or a photo below.' }));
+      blocksBox.append(h('p', { class: 'muted empty-blocks', text: 'Your story is empty. Add a heading, some text or an artwork photo below.' }));
       return;
     }
     current.blocks.forEach(function (b, i) { blocksBox.append(blockCard(b, i, current.blocks.length)); });
@@ -320,7 +318,7 @@
     });
   }
 
-  /* ---------- views ---------- */
+  /* ---------- views / list ---------- */
 
   function listRow(a, row) {
     var del = h('button', { type: 'button', class: 'btn btn--small btn--ghost', text: 'Delete' });
@@ -343,6 +341,8 @@
     });
 
     var published = a.status === 'published';
+    var viewsCount = a.views || 0;
+
     return h('article', { class: 'feat' },
       AV.photo(a, 'feat-thumb'),
       h('div', { class: 'feat-info' },
@@ -351,6 +351,7 @@
           h('span', { class: 'tag', text: a.category }),
           h('span', { class: 'chip ' + (published ? 'chip--live' : 'chip--draft'), text: published ? 'Published' : 'Draft' }),
           a.featured ? h('span', { class: 'chip', text: 'Cover story' }) : null,
+          h('span', { class: 'chip', style: 'background: var(--accent-purple, #7d328d); color: #fffff3; border: none; font-weight: 600;' }, '👁️ ' + viewsCount.toLocaleString() + ' reads'),
           h('span', { class: 'muted', text: 'Edited ' + fmt(a.updatedAt) }))),
       h('div', { class: 'feat-actions' },
         h('a', { class: 'btn btn--small', href: '#/edit/' + a.id, text: 'Edit' }),
@@ -361,7 +362,7 @@
   function showList() {
     current = null;
     dirtyEl = null;
-    document.title = 'Features | AUTOVANT editor';
+    document.title = 'Features | HOLIX editor';
     app.textContent = '';
     var box = h('div', { class: 'feat-list' }, h('p', { class: 'muted', text: 'Loading…' }));
     app.append(
@@ -388,7 +389,7 @@
   }
 
   function drawEditor() {
-    document.title = (current.title || 'New feature') + ' | AUTOVANT editor';
+    document.title = (current.title || 'New feature') + ' | HOLIX editor';
     app.textContent = '';
 
     dirtyEl = h('span', { class: 'dirty', text: 'Unsaved changes', hidden: !dirty });
@@ -425,7 +426,7 @@
         addButton('Text', 'text'),
         addButton('Photo', 'image'),
         addButton('Pull quote', 'quote'),
-        addButton('Spec sheet', 'specs'),
+        addButton('Work Specs', 'specs'),
         h('label', { class: 'btn btn--small' }, 'Add several photos', multi)));
 
     app.append(
@@ -521,7 +522,7 @@
   document.getElementById('signout').addEventListener('click', function () {
     if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
     dirty = false;
-    AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin'; });
+    AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin/login.html'; });
   });
 
   // CSV download of email sign-ups
@@ -530,7 +531,7 @@
     csvBtn.addEventListener('click', function () {
       guard(AVD.subscribersCsv()).then(function (csv) {
         var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-        var a = h('a', { href: url, download: 'autovant-subscribers.csv' });
+        var a = h('a', { href: url, download: 'holix-subscribers.csv' });
         document.body.append(a);
         a.click();
         a.remove();
@@ -541,7 +542,7 @@
 
   // Only open the editor if signed in; otherwise go to the sign-in page.
   AVD.getSession().then(function (s) {
-    if (!s) { window.location.replace('/admin'); return; }
+    if (!s) { window.location.replace('/admin/login.html'); return; }
     route();
-  }).catch(function () { window.location.replace('/admin'); });
+  }).catch(function () { window.location.replace('/admin/login.html'); });
 })();

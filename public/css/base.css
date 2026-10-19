@@ -1,15 +1,25 @@
-/* AUTOVANT shared styles: tokens, header, footer, textures, buttons */
+/* HOLIX shared styles: tokens, header, footer, textures, buttons */
 
 :root {
-  --ink: #0d0c0b;
-  --coal: #161412;
-  --graphite: #211e1b;
-  --line: #38332d;
-  --text: #f2efe9;
-  --muted: #a8a298;
-  --champagne: #cfba8f;
-  --champagne-deep: #8d7d5b;
-  --display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  /* New Holix Color Palette */
+  --bg-dark: #1b1464;            /* Deep Navy Background */
+  --accent-pink: #e0006d;        /* Vivid Magenta Accent */
+  --accent-purple: #7d328d;      /* Deep Purple Accent */
+  --accent-orange: #ef7b00;      /* Warm Orange */
+  --accent-amber: #eaa029;       /* Amber Gold */
+  --text-light: #fffff3;         /* Off-White Text */
+
+  /* Mapped Theme Variables */
+  --ink: #1b1464;
+  --coal: #241b7a;
+  --graphite: #32258c;
+  --line: #4b3da8;
+  --text: #fffff3;
+  --muted: #cfc9e2;
+  --champagne: #eaa029;
+  --champagne-deep: #ef7b00;
+  
+  --display: "Cormorant Garamond", "Bodoni Moda", "Didot", Georgia, serif;
   --body: "Hanken Grotesk", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
   --gutter: max(16px, 4vw);
@@ -27,15 +37,15 @@ html { scroll-padding-top: 96px; }
 
 body {
   margin: 0;
-  background: var(--ink);
-  color: var(--text);
+  background: var(--bg-dark);
+  color: var(--text-light);
   font: 400 16px/1.6 var(--body);
   -webkit-font-smoothing: antialiased;
 }
 
 a { color: inherit; }
 a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
-  outline: 2px solid var(--champagne);
+  outline: 2px solid var(--accent-pink);
   outline-offset: 3px;
 }
 
@@ -47,7 +57,7 @@ h1, h2, h3 { text-wrap: balance; font-family: var(--display); font-weight: 400; 
   font: 500 11px/1.4 var(--mono);
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--champagne);
+  color: var(--accent-pink);
 }
 
 .link {
@@ -56,11 +66,11 @@ h1, h2, h3 { text-wrap: balance; font-family: var(--display); font-weight: 400; 
   letter-spacing: 0.14em;
   text-transform: uppercase;
   text-decoration: none;
-  color: var(--champagne);
+  color: var(--accent-pink);
   padding-block: 8px;
-  border-bottom: 1px solid var(--champagne-deep);
+  border-bottom: 1px solid var(--accent-purple);
 }
-a:hover > .link, .link:hover { border-bottom-color: var(--champagne); }
+a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
 
 .skip { position: absolute; left: -9999px; top: 8px; background: var(--champagne); color: var(--ink); padding: 8px 12px; z-index: 50; }
 .skip:focus { left: 8px; }

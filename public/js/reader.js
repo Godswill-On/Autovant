@@ -8,6 +8,19 @@
  *
  * All story text goes in with textContent, never innerHTML.
  */
+function recordView(articleId) {
+    if (!articleId) return;
+    // Assuming AVD or supabase client is available globally
+    if (window.supabase) {
+      supabase.rpc('increment_article_views', { article_id: articleId })
+        .then(function (res) {
+          if (res.error) console.error('Error logging view:', res.error.message);
+        })
+        .catch(function (err) {
+          console.error('Failed to log view:', err);
+        });
+    }
+  }
 (function () {
   'use strict';
   var h = AV.h;
@@ -529,8 +542,16 @@
     ]).then(function (res) {
       article = res[0];
       related = res[1].filter(function (a) { return a.slug !== article.slug; });
-      document.title = article.title + ' | AUTOVANT';
+      
+      // Update page title and text references to Holix
+      document.title = article.title + ' | HOLIX';
       titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
+
+      // --- RECORD ISSUE VIEW HERE ---
+      if (article && article.id) {
+        recordView(article.id);
+      }
+
       setBackLink();
       wire();
       build(0, null);
