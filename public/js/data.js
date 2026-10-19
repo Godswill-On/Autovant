@@ -307,24 +307,18 @@
   }
 
   function upload(file) {
+
 function upload(file) {
   if (!file) return Promise.reject(new Error('No file selected.'));
 
   var isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
-  var isImage = file.type.indexOf('image/') === 0;
-
-  if (!isPdf && !isImage) {
-    return Promise.reject(new Error('Only JPG, PNG, WebP photos or PDF documents are allowed.'));
-  }
-
-  // Generate clean storage path
+  var bucketName = isPdf ? 'issues' : 'media'; // Use dedicated issues bucket for PDFs!
   var folder = isPdf ? 'pdf/' : 'photos/';
   var cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
   var path = folder + Date.now() + '_' + cleanName;
 
-  // Perform Supabase Storage Upload
   return supabase.storage
-    .from('media')
+    .from(bucketName)
     .upload(path, file, {
       cacheControl: '3600',
       contentType: isPdf ? 'application/pdf' : file.type,
@@ -332,7 +326,7 @@ function upload(file) {
     })
     .then(function (result) {
       if (result.error) throw result.error;
-      var publicData = supabase.storage.from('media').getPublicUrl(path);
+      var publicData = supabase.storage.from(bucketName).getPublicUrl(path);
       return publicData.data.publicUrl;
     });
 }
