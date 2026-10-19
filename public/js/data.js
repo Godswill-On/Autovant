@@ -1,24 +1,21 @@
 /*
- * AUTOVANT data layer.
- * Replaces the old Node server (/api/...). Everything now talks to Supabase directly:
- *   - features live in the "articles" table
- *   - photos live in the "photos" storage bucket
- *   - email sign-ups live in the "subscribers" table
- *   - the editor signs in with Supabase Auth
- * Who may read and write what is enforced by the row-level security rules in supabase/setup.sql.
- * The anon key below is meant to be public; it can only do what those rules allow.
+- AUTOVANT data layer.
+- Everything talks to Supabase directly:
+- features live in the "issues" table
+- files/media live in storage buckets
  */
 (function () {
   'use strict';
 
   var SUPABASE_URL = 'https://ijfbywnlygjmebblqwrh.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqZmJ5d25seWdqbWViYmxxd3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MTI5OTYsImV4cCI6MjEwNzM4ODk5Nn0.73jEbITrBDxUCeIyMdm9FpCtNHLAE9bc_yzq8V6sutE';
-  var BUCKET = 'photos';
+  var BUCKET = 'media';
 
-  var CATEGORIES = ['Exterior', 'Interior', 'Custom Builds', 'Designers & Brands', 'Concepts', 'Features'];
+  // Updated categories/sections for your magazine platform
+  var CATEGORIES = ['Issues', 'Features', 'Custom Builds', 'Editorial'];
   var SOURCES = ['Official', 'Verified', 'Our view'];
-  // Photos may come from our storage bucket or from the bundled sample images.
-  var SRC_RE = new RegExp('^(' + SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/storage/v1/object/public/' + BUCKET + '/[A-Za-z0-9._-]{1,120}|/img/[A-Za-z0-9._-]{1,100})$');
+  
+  var SRC_RE = new RegExp('^(' + SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/storage/v1/object/public/(media|issues)/[A-Za-z0-9._/-]{1,150}|/img/[A-Za-z0-9._-]{1,100})$');
 
   if (!window.supabase || !window.supabase.createClient) {
     console.error('Supabase library did not load. Check your connection.');
@@ -33,7 +30,6 @@
     return e;
   }
 
-  // Turn a Supabase error into a plain-English Error the pages can show.
   function explain(error, fallback) {
     if (!error) return fail(fallback || 'Something went wrong. Try again.');
     var msg = String(error.message || '');
@@ -48,7 +44,7 @@
       return fail('The database tables are missing. Run supabase/setup.sql in your Supabase SQL editor.', 500);
     }
     if (/bucket not found/i.test(msg)) {
-      return fail('The "photos" storage bucket is missing. Run supabase/setup.sql in your Supabase SQL editor.', 500);
+      return fail('The storage bucket is missing. Run supabase/setup.sql in your Supabase SQL editor.', 500);
     }
     if (/failed to fetch|networkerror|load failed/i.test(msg)) {
       return fail('Could not reach Supabase. Check your connection and try again.', 0);
@@ -106,7 +102,7 @@
     }).filter(Boolean);
   }
 
-  // database row -> the article object the pages expect
+  // database row -> the issue/article object the pages expect
   function fromRow(r) {
     return {
       id: r.id,
@@ -115,6 +111,7 @@
       category: r.category,
       dek: r.dek || '',
       cover: r.cover || '',
+      pdf_url: r.pdf_url || '',
       featured: !!r.featured,
       status: r.status,
       createdAt: r.created_at,
@@ -130,7 +127,7 @@
     }, 0);
     return {
       id: a.id, slug: a.slug, title: a.title, category: a.category, dek: a.dek, cover: a.cover,
-      featured: a.featured, status: a.status, publishedAt: a.publishedAt, updatedAt: a.updatedAt,
+      pdf_url: a.pdf_url, featured: a.featured, status: a.status, publishedAt: a.publishedAt, updatedAt: a.updatedAt,
       minutes: Math.max(1, Math.round(words / 200))
     };
   }
@@ -138,7 +135,7 @@
   /* ---------- public reading ---------- */
 
   function listPublished(category) {
-    var q = sb.from('articles').select('*').eq('status', 'published');
+    var q = sb.from('issues').select('*').eq('status', 'published');
     if (category) q = q.eq('category', category);
     return q.order('published_at', { ascending: false, nullsFirst: false }).then(function (res) {
       if (res.error) throw explain(res.error);
@@ -146,9 +143,8 @@
     });
   }
 
-  // Drafts are only returned when the editor is signed in (the database enforces this).
   function getBySlug(slug) {
-    return sb.from('articles').select('*').eq('slug', slug).maybeSingle().then(function (res) {
+    return sb.from('issues').select('*').eq('slug', slug).maybeSingle().then(function (res) {
       if (res.error) throw explain(res.error);
       if (!res.data) throw fail('Not found.', 404);
       return fromRow(res.data);
@@ -159,7 +155,6 @@
     email = str(email, 200).toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return Promise.reject(fail('Enter a valid email address.', 400));
     return sb.from('subscribers').insert({ email: email }).then(function (res) {
-      // 23505 = already on the list, which is fine
       if (res.error && res.error.code !== '23505') throw explain(res.error, 'Could not save your email. Try again.');
       return { ok: true };
     });
@@ -182,7 +177,6 @@
     return sb.auth.signOut();
   }
 
-  // Run an editor call, but fail clearly if the editor is not signed in.
   function authed(fn) {
     return getSession().then(function (s) {
       if (!s) throw fail('Your session has ended. Sign in again.', 401);
@@ -190,11 +184,11 @@
     });
   }
 
-  /* ---------- editor: features ---------- */
+  /* ---------- editor: features / issues ---------- */
 
   function adminList() {
     return authed(function () {
-      return sb.from('articles').select('*').order('updated_at', { ascending: false }).then(function (res) {
+      return sb.from('issues').select('*').order('updated_at', { ascending: false }).then(function (res) {
         if (res.error) throw explain(res.error);
         return res.data.map(fromRow).map(summary);
       });
@@ -203,7 +197,7 @@
 
   function adminGet(id) {
     return authed(function () {
-      return sb.from('articles').select('*').eq('id', id).maybeSingle().then(function (res) {
+      return sb.from('issues').select('*').eq('id', id).maybeSingle().then(function (res) {
         if (res.error) throw explain(res.error);
         if (!res.data) throw fail('Not found.', 404);
         return fromRow(res.data);
@@ -213,7 +207,7 @@
 
   function uniqueSlug(title) {
     var base = slugify(title);
-    return sb.from('articles').select('slug').like('slug', base + '%').then(function (res) {
+    return sb.from('issues').select('slug').like('slug', base + '%').then(function (res) {
       if (res.error) throw explain(res.error);
       var taken = {};
       res.data.forEach(function (r) { taken[r.slug] = true; });
@@ -232,9 +226,10 @@
 
     var fields = {
       title: title,
-      category: pick(body.category, CATEGORIES, 'Features'),
+      category: pick(body.category, CATEGORIES, 'Issues'),
       dek: str(body.dek, 400),
       cover: SRC_RE.test(body.cover || '') ? body.cover : '',
+      pdf_url: SRC_RE.test(body.pdf_url || '') ? body.pdf_url : (body.pdf_url || ''),
       featured: !!body.featured,
       status: status,
       blocks: cleanBlocks(body.blocks),
@@ -243,11 +238,11 @@
 
     return authed(function () {
       if (id) {
-        return sb.from('articles').select('published_at').eq('id', id).maybeSingle().then(function (cur) {
+        return sb.from('issues').select('published_at').eq('id', id).maybeSingle().then(function (cur) {
           if (cur.error) throw explain(cur.error);
           if (!cur.data) throw fail('Not found.', 404);
           fields.published_at = cur.data.published_at || (status === 'published' ? now : null);
-          return sb.from('articles').update(fields).eq('id', id).select('*').maybeSingle();
+          return sb.from('issues').update(fields).eq('id', id).select('*').maybeSingle();
         }).then(function (res) {
           if (res.error) throw explain(res.error);
           if (!res.data) throw fail('Could not save. Your session may have ended: sign in again.', 401);
@@ -257,7 +252,7 @@
       return uniqueSlug(title).then(function (slug) {
         fields.slug = slug;
         fields.published_at = status === 'published' ? now : null;
-        return sb.from('articles').insert(fields).select('*').single();
+        return sb.from('issues').insert(fields).select('*').single();
       }).then(function (res) {
         if (res.error) throw explain(res.error);
         return fromRow(res.data);
@@ -267,7 +262,7 @@
 
   function adminDelete(id) {
     return authed(function () {
-      return sb.from('articles').delete().eq('id', id).select('id').then(function (res) {
+      return sb.from('issues').delete().eq('id', id).select('id').then(function (res) {
         if (res.error) throw explain(res.error);
         if (!res.data || !res.data.length) throw fail('Could not delete. Your session may have ended: sign in again.', 401);
         return { ok: true };
@@ -275,61 +270,29 @@
     });
   }
 
-  /* ---------- editor: photos ---------- */
-
-  var MAX_BYTES = 25 * 1024 * 1024;
-
-  // Shrink to 2600px and convert to WebP in the browser, so pages load fast and uploads stay small.
-  function prepare(file) {
-    var original = { body: file, type: file.type, ext: file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg' };
-    if (!window.createImageBitmap) return Promise.resolve(original);
-    return createImageBitmap(file).then(function (bmp) {
-      var scale = Math.min(1, 2600 / Math.max(bmp.width, bmp.height));
-      var canvas = document.createElement('canvas');
-      canvas.width = Math.max(1, Math.round(bmp.width * scale));
-      canvas.height = Math.max(1, Math.round(bmp.height * scale));
-      canvas.getContext('2d').drawImage(bmp, 0, 0, canvas.width, canvas.height);
-      if (bmp.close) bmp.close();
-      return new Promise(function (resolve) {
-        canvas.toBlob(function (blob) {
-          resolve(blob && blob.type === 'image/webp' && blob.size < file.size * 1.2
-            ? { body: blob, type: 'image/webp', ext: 'webp' }
-            : original);
-        }, 'image/webp', 0.86);
-      });
-    }).catch(function () { return original; });
-  }
-
-  function randomName() {
-    var a = new Uint8Array(12);
-    crypto.getRandomValues(a);
-    return Array.prototype.map.call(a, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
-  }
+  /* ---------- editor: upload (photos & PDFs) ---------- */
 
   function upload(file) {
+    if (!file) return Promise.reject(new Error('No file selected.'));
 
-function upload(file) {
-  if (!file) return Promise.reject(new Error('No file selected.'));
+    var isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
+    var bucketName = isPdf ? 'issues' : 'media';
+    var folder = isPdf ? 'pdf/' : 'photos/';
+    var cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    var path = folder + Date.now() + '_' + cleanName;
 
-  var isPdf = file.type === 'application/pdf' || file.name.endsWith('.pdf');
-  var bucketName = isPdf ? 'issues' : 'media'; // Use dedicated issues bucket for PDFs!
-  var folder = isPdf ? 'pdf/' : 'photos/';
-  var cleanName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-  var path = folder + Date.now() + '_' + cleanName;
-
-  return supabase.storage
-    .from(bucketName)
-    .upload(path, file, {
-      cacheControl: '3600',
-      contentType: isPdf ? 'application/pdf' : file.type,
-      upsert: true
-    })
-    .then(function (result) {
-      if (result.error) throw result.error;
-      var publicData = supabase.storage.from(bucketName).getPublicUrl(path);
-      return publicData.data.publicUrl;
-    });
-}
+    return sb.storage
+      .from(bucketName)
+      .upload(path, file, {
+        cacheControl: '3600',
+        contentType: isPdf ? 'application/pdf' : file.type,
+        upsert: true
+      })
+      .then(function (result) {
+        if (result.error) throw result.error;
+        var publicData = sb.storage.from(bucketName).getPublicUrl(path);
+        return publicData.data.publicUrl;
+      });
   }
 
   /* ---------- editor: subscribers ---------- */
