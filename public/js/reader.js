@@ -304,7 +304,7 @@ function recordView(articleId) {
       src: pdfUrl + '#toolbar=0&navpanes=0&view=FitH',
       style: 'width: 100%; height: 100%; border: none; background: #111;'
     });
-    return h('section', { class: 'page page--pdf', style: 'width: 100%; height: 100%; overflow: hidden;' }, iframe);
+    return h('section', { class: 'page page--pdf', style: 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;' }, iframe);
   }
 
   function colophonPage(index) {
@@ -339,11 +339,6 @@ function recordView(articleId) {
   }
 
   function makePages(m) {
-    // If the record has an attached PDF file, display the PDF viewer
-    if (article.pdf_url) {
-      return [coverPage(), pdfEmbedPage(article.pdf_url), endPage(2), backCover()];
-    }
-
     var measurer = makeMeasurer(m.spread);
     var descs = paginate(makeUnits(article.blocks), measurer.fits, m.spread);
     measurer.done();
@@ -402,6 +397,20 @@ function recordView(articleId) {
     if (book) book.destroy();
     var m = metrics();
     sizeKey = m.key;
+
+    // Handle PDF Issues directly:
+    if (article && article.pdf_url) {
+      wrap.style.width = '100%';
+      wrap.style.height = 'calc(100vh - 120px)';
+      wrap.textContent = '';
+      wrap.append(pdfEmbedPage(article.pdf_url));
+      if (posEl) posEl.textContent = 'PDF Issue';
+      if (fillEl) fillEl.style.width = '100%';
+      if (btnPrev) btnPrev.disabled = true;
+      if (btnNext) btnNext.disabled = true;
+      return;
+    }
+
     wrap.style.setProperty('--page-w', m.pageW + 'px');
     wrap.style.setProperty('--page-h', m.pageH + 'px');
     wrap.style.width = (m.spread ? m.pageW * 2 : m.pageW) + 'px';
@@ -423,16 +432,16 @@ function recordView(articleId) {
     else if (book.spread && s === book.leaves.length) label = 'Back cover';
     else if (book.spread) label = 'Pages ' + (2 * s - 1) + '–' + Math.min(2 * s, pageCount) + ' of ' + pageCount;
     else label = 'Page ' + s + ' of ' + pageCount;
-    posEl.textContent = label;
-    fillEl.style.width = (book.maxState ? (s / book.maxState) * 100 : 0) + '%';
-    btnPrev.disabled = s === 0;
-    btnNext.disabled = s >= book.maxState;
+    if (posEl) posEl.textContent = label;
+    if (fillEl) fillEl.style.width = (book.maxState ? (s / book.maxState) * 100 : 0) + '%';
+    if (btnPrev) btnPrev.disabled = s === 0;
+    if (btnNext) btnNext.disabled = s >= book.maxState;
   }
 
   function quiet() {
     if (quietNote) return;
     quietNote = true;
-    note.classList.add('is-quiet');
+    if (note) note.classList.add('is-quiet');
   }
 
   function turn(dir) {
@@ -447,21 +456,21 @@ function recordView(articleId) {
   }
 
   function closeBook() {
-    var url = closeEl.getAttribute('href') || '/';
+    var url = closeEl ? closeEl.getAttribute('href') : '/';
     if (book && book.state > 0 && !reduced) {
       book.goTo(0, true);
-      setTimeout(function () { leaveTo(url); }, TURN_MS + 250);
+      setTimeout(function () { leaveTo(url || '/'); }, TURN_MS + 250);
     } else {
-      leaveTo(url);
+      leaveTo(url || '/');
     }
   }
 
   /* ---------- input ---------- */
 
   function wire() {
-    btnPrev.addEventListener('click', function () { turn(-1); });
-    btnNext.addEventListener('click', function () { turn(1); });
-    closeEl.addEventListener('click', function (e) { e.preventDefault(); closeBook(); });
+    if (btnPrev) btnPrev.addEventListener('click', function () { turn(-1); });
+    if (btnNext) btnNext.addEventListener('click', function () { turn(1); });
+    if (closeEl) closeEl.addEventListener('click', function (e) { e.preventDefault(); closeBook(); });
 
     document.addEventListener('keydown', function (e) {
       if (e.altKey || e.ctrlKey || e.metaKey || !book) return;
@@ -527,8 +536,10 @@ function recordView(articleId) {
     try {
       var ref = new URL(document.referrer);
       if (ref.origin === location.origin && !/^\/(admin|read)(\/|$)/.test(ref.pathname)) {
-        closeEl.setAttribute('href', ref.pathname + ref.search + ref.hash);
-        closeEl.textContent = 'Close the book';
+        if (closeEl) {
+          closeEl.setAttribute('href', ref.pathname + ref.search + ref.hash);
+          closeEl.textContent = 'Close the book';
+        }
       }
     } catch (e) { }
   }
