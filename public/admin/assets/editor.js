@@ -31,8 +31,6 @@
 
   /* ---------- requests ---------- */
 
-  /* ---------- requests ---------- */
-
   function sessionEnded() {
     if (banner) {
       banner.hidden = false;
@@ -53,7 +51,6 @@
     });
   }
 
-  
   function uploadFile(file) {
     return guard(AVD.upload(file));
   }
@@ -61,6 +58,7 @@
   /* ---------- small UI helpers ---------- */
 
   function toast(text, kind) {
+    if (!toastEl) return;
     toastEl.textContent = text;
     toastEl.className = 'toast is-on' + (kind === 'error' ? ' toast--error' : '');
     clearTimeout(toastTimer);
@@ -137,40 +135,54 @@
     return h('div', { class: 'uploader' }, preview, h('div', { class: 'up-actions' }, pick, clear), status);
   }
 
-  /* ---------- PDF uploader UI ---------- */
+  /* ---------- PDF uploader UI (Auto-creates & Auto-saves) ---------- */
 
- function pdfUploader(pdfUrl, onChange) {
-  var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
-  var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
-  var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
+  function pdfUploader(pdfUrl, onChange) {
+    var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? '✓ PDF attached' : 'No PDF attached' });
+    var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
+    var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
 
-  // When a PDF is selected and uploaded:
-AVD.upload(pdfFile).then(function(pdfUrl) {
-  // Extract a clean title from the filename (e.g., "Holix Issue 03" from "Holix_Issue_03.pdf")
-  var originalName = pdfFile.name.replace(/\.[^/.]+$/, "");
-  var cleanTitle = originalName.replace(/[-_]/g, ' ');
+    input.addEventListener('change', function () {
+      var file = input.files && input.files[0];
+      if (!file) return;
 
-  var issueData = {
-    title: cleanTitle,
-    category: 'Issues',
-    status: 'published',
-    pdf_url: pdfUrl,
-    dek: 'Digital magazine issue',
-    blocks: []
-  };
+      var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
 
-  // Automatically save the issue to Supabase immediately!
-  return AVD.adminSave(null, issueData);
-}).then(function(savedIssue) {
-  // Show success and refresh or redirect to preview
-  console.log('Issue automatically created and saved:', savedIssue);
-  window.location.href = '/book.html?slug=' + savedIssue.slug;
-}).catch(function(err) {
-  alert('Upload/Auto-save failed: ' + err.message);
-});
+      uploadFile(file)
+        .then(function (url) {
+          onChange(url);
+          status.textContent = '✓ Uploaded (' + sizeMb + ' MB). Creating issue record...';
 
-  return h('div', { class: 'pdf-uploader' }, pick, status);
-}
+          // Extract title from filename (e.g. "Holix Issue 03" from "Holix_Issue_03.pdf")
+          var rawName = file.name.replace(/\.[^/.]+$/, "");
+          var autoTitle = current.title && current.title.trim() ? current.title.trim() : rawName.replace(/[-_]/g, ' ');
+
+          current.title = autoTitle;
+          current.pdf_url = url;
+          current.category = current.category || 'Issues';
+          current.status = 'published';
+
+          // Instantly save to database!
+          return save();
+        })
+        .then(function (saved) {
+          toast('PDF Issue uploaded and published!');
+          if (saved && saved.slug) {
+            window.location.href = '/read/' + saved.slug;
+          }
+        })
+        .catch(function (e) {
+          status.textContent = 'Upload failed: ' + (e.message || 'Server error');
+          toast('PDF Upload failed: ' + e.message, 'error');
+        })
+        .then(function () {
+          input.value = '';
+        });
+    });
+
+    return h('div', { class: 'pdf-uploader' }, pick, status);
+  }
 
   /* ---------- story blocks ---------- */
 
@@ -280,6 +292,7 @@ AVD.upload(pdfFile).then(function(pdfUrl) {
   }
 
   function drawBlocks() {
+    if (!blocksBox) return;
     blocksBox.textContent = '';
     if (!current.blocks.length) {
       blocksBox.append(h('p', { class: 'muted empty-blocks', text: 'Your story is empty. Add a heading, some text or an artwork photo below.' }));
@@ -324,13 +337,13 @@ AVD.upload(pdfFile).then(function(pdfUrl) {
   function payload() {
     return {
       title: current.title,
-      category: current.category,
-      dek: current.dek,
-      cover: current.cover,
+      category: current.category || 'Issues',
+      dek: current.dek || '',
+      cover: current.cover || '',
       pdf_url: current.pdf_url || '',
       featured: !!current.featured,
-      status: current.status,
-      blocks: current.blocks
+      status: current.status || 'draft',
+      blocks: current.blocks || []
     };
   }
 
@@ -514,7 +527,7 @@ AVD.upload(pdfFile).then(function(pdfUrl) {
 
   function showEditor(id) {
     if (!id) {
-      current = { title: '', category: 'Features', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
+      current = { title: '', category: 'Issues', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
       dirty = false;
       drawEditor();
       return;
@@ -568,13 +581,15 @@ AVD.upload(pdfFile).then(function(pdfUrl) {
     }
   });
 
-  document.getElementById('signout').addEventListener('click', function () {
-    if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
-    dirty = false;
-    AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin/login.html'; });
-  });
+  var signoutBtn = document.getElementById('signout');
+  if (signoutBtn) {
+    signoutBtn.addEventListener('click', function () {
+      if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
+      dirty = false;
+      AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin/login.html'; });
+    });
+  }
 
-  // CSV download of email sign-ups
   var csvBtn = document.getElementById('subs-csv');
   if (csvBtn) {
     csvBtn.addEventListener('click', function () {
@@ -589,7 +604,6 @@ AVD.upload(pdfFile).then(function(pdfUrl) {
     });
   }
 
-  // Only open the editor if signed in; otherwise go to the sign-in page.
   AVD.getSession().then(function (s) {
     if (!s) { window.location.replace('/admin/login.html'); return; }
     route();
