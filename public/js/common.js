@@ -1,15 +1,18 @@
 /* HOLIX shared helpers: categories, small DOM builder, header, footer, cards */
+/* HOLIX shared helpers: categories, DOM builder, header, footer, cards */
 (function () {
   'use strict';
 
   var CATS = [
-    { name: 'Visual Art', slug: 'visual-art', tx: 'tx-carbon', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
-    { name: 'Installations', slug: 'installations', tx: 'tx-leather', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
-    { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-paint', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
-    { name: 'Exhibitions', slug: 'designers-brands', tx: 'tx-metal', blurb: 'Features on milestone shows, curators, and cultural institutions.' },
-    { name: 'Concepts', slug: 'concepts', tx: 'tx-grid', blurb: 'Experimental designs, visionary objects, and futuristic studies.' },
-    { name: 'Features', slug: 'features', tx: 'tx-leather', blurb: 'In-depth editorial stories and special digital editions.' }
+    { name: 'Issues', slug: 'issues', tx: 'tx-carbon', blurb: 'Full digital magazine editions and structured publications.' },
+    { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-leather', blurb: 'Weekly featured editorial spotlights and deep dives.' },
+    { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
+    { name: 'Installations', slug: 'installations', tx: 'tx-metal', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
+    { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
+    { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }
   ];
+
+  // (Keep the rest of your common.js helper methods intact...)
 
   function h(tag, attrs) {
     var el = document.createElement(tag);

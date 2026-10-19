@@ -22,6 +22,19 @@
         <button type="button" id="signout">Sign out</button>
       </nav>
     </div>
+    <!-- PDF MAGAZINE UPLOAD OPTION -->
+<div class="panel-card">
+  <div class="panel-head">
+    <label class="tag">PDF Magazine (Optional)</label>
+  </div>
+  <p class="help-text">Upload a complete pre-made PDF magazine issue instead of creating manual blocks.</p>
+  <div class="field">
+    <input type="file" id="pdf-file-input" accept="application/pdf" style="display:none">
+    <button type="button" class="btn btn--sec" id="upload-pdf-btn">Upload PDF File</button>
+  </div>
+  <div id="pdf-status" class="meta" style="margin-top: 8px;"></div>
+  <input type="hidden" id="pdf-url-field" name="pdf_url">
+</div>
   </header>
 
   <div class="banner" id="banner" role="alert" hidden></div>

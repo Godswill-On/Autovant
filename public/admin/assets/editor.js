@@ -418,7 +418,37 @@
       var files = [].slice.call(multi.files);
       multi.value = '';
       if (files.length) addPhotos(files);
+      
     });
+    // PDF Upload Trigger
+var pdfBtn = document.getElementById('upload-pdf-btn');
+var pdfInput = document.getElementById('pdf-file-input');
+var pdfStatus = document.getElementById('pdf-status');
+var pdfUrlField = document.getElementById('pdf-url-field');
+
+if (pdfBtn && pdfInput) {
+  pdfBtn.addEventListener('click', function () {
+    pdfInput.click();
+  });
+
+  pdfInput.addEventListener('change', function (e) {
+    var file = e.target.files[0];
+    if (!file) return;
+
+    pdfStatus.textContent = 'Uploading PDF...';
+    
+    var fileName = 'pdf/' + Date.now() + '_' + file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+    // Upload file directly using Supabase client (AVD)
+    AVD.uploadFile(fileName, file).then(function (publicUrl) {
+      pdfUrlField.value = publicUrl;
+      pdfStatus.textContent = 'PDF Uploaded: ' + file.name;
+      pdfBtn.textContent = 'Replace PDF';
+    }).catch(function (err) {
+      pdfStatus.textContent = 'Upload failed: ' + err.message;
+    });
+  });
+}
     var addBar = h('div', { class: 'add-bar' },
       h('span', { class: 'tag', text: 'Add to the story' }),
       h('div', { class: 'add-btns' },
