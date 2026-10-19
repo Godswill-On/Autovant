@@ -31,21 +31,29 @@
 
   /* ---------- requests ---------- */
 
+  /* ---------- requests ---------- */
+
   function sessionEnded() {
-    banner.hidden = false;
-    banner.textContent = '';
-    banner.append('Your session has ended. ',
-      h('a', { href: '/admin/login.html', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
-      ', then come back here and save. Your changes are still on this page.');
+    if (banner) {
+      banner.hidden = false;
+      banner.textContent = '';
+      banner.append('Your session has ended. ',
+        h('a', { href: '/admin/login.html', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
+        ', then come back here and save. Your changes are still on this page.');
+    }
   }
 
   function guard(promise) {
-    return promise.then(function (v) { banner.hidden = true; return v; }, function (e) {
+    return promise.then(function (v) { 
+      if (banner) banner.hidden = true; 
+      return v; 
+    }, function (e) {
       if (e && e.status === 401) { sessionEnded(); }
       throw e;
     });
   }
 
+  
   function uploadFile(file) {
     return guard(AVD.upload(file));
   }
