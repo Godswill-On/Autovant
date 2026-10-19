@@ -307,9 +307,11 @@
   }
 
   function upload(file) {
-    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) {
-      return Promise.reject(fail('Use a JPG, PNG or WebP photo. iPhone HEIC photos need converting first.', 400));
-    }
+    // Update the validation check to allow PDFs:
+var validTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+if (!validTypes.includes(file.type)) {
+  return Promise.reject(new Error('Use a JPG, PNG, WebP photo or a PDF document.'));
+}
     if (file.size > MAX_BYTES) return Promise.reject(fail('That photo is larger than 25 MB.', 400));
     return authed(function () {
       return prepare(file).then(function (p) {
