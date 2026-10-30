@@ -32,20 +32,15 @@
   /* ---------- requests ---------- */
 
   function sessionEnded() {
-    if (banner) {
-      banner.hidden = false;
-      banner.textContent = '';
-      banner.append('Your session has ended. ',
-        h('a', { href: '/admin/login.html', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
-        ', then come back here and save. Your changes are still on this page.');
-    }
+    banner.hidden = false;
+    banner.textContent = '';
+    banner.append('Your session has ended. ',
+      h('a', { href: '/admin/login.html', target: '_blank', rel: 'noopener', text: 'Sign in again in a new tab' }),
+      ', then come back here and save. Your changes are still on this page.');
   }
 
   function guard(promise) {
-    return promise.then(function (v) { 
-      if (banner) banner.hidden = true; 
-      return v; 
-    }, function (e) {
+    return promise.then(function (v) { banner.hidden = true; return v; }, function (e) {
       if (e && e.status === 401) { sessionEnded(); }
       throw e;
     });
@@ -58,7 +53,6 @@
   /* ---------- small UI helpers ---------- */
 
   function toast(text, kind) {
-    if (!toastEl) return;
     toastEl.textContent = text;
     toastEl.className = 'toast is-on' + (kind === 'error' ? ' toast--error' : '');
     clearTimeout(toastTimer);
@@ -135,54 +129,38 @@
     return h('div', { class: 'uploader' }, preview, h('div', { class: 'up-actions' }, pick, clear), status);
   }
 
-  /* ---------- PDF uploader UI (Auto-creates & Auto-saves) ---------- */
+  /* ---------- PDF uploader UI ---------- */
 
-  function pdfUploader(pdfUrl, onChange) {
-    var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? '✓ PDF attached' : 'No PDF attached' });
-    var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
-    var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
+ function pdfUploader(pdfUrl, onChange) {
+  var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
+  var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
+  var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
 
-    input.addEventListener('change', function () {
-      var file = input.files && input.files[0];
-      if (!file) return;
+  input.addEventListener('change', function () {
+    var file = input.files && input.files[0];
+    if (!file) return;
 
-      var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
-      status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
+    var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+    status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
 
-      uploadFile(file)
-        .then(function (url) {
-          onChange(url);
-          status.textContent = '✓ Uploaded (' + sizeMb + ' MB). Creating issue record...';
+    uploadFile(file)
+      .then(function (url) {
+        onChange(url);
+        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB)';
+        pick.textContent = 'Replace PDF Issue';
+        toast('PDF magazine uploaded successfully!');
+      })
+      .catch(function (e) {
+        status.textContent = 'Upload failed: ' + (e.message || 'Server error');
+        toast('PDF Upload failed: ' + e.message, 'error');
+      })
+      .then(function () {
+        input.value = '';
+      });
+  });
 
-          // Extract title from filename (e.g. "Holix Issue 03" from "Holix_Issue_03.pdf")
-          var rawName = file.name.replace(/\.[^/.]+$/, "");
-          var autoTitle = current.title && current.title.trim() ? current.title.trim() : rawName.replace(/[-_]/g, ' ');
-
-          current.title = autoTitle;
-          current.pdf_url = url;
-          current.category = current.category || 'Issues';
-          current.status = 'published';
-
-          // Instantly save to database!
-          return save();
-        })
-        .then(function (saved) {
-          toast('PDF Issue uploaded and published!');
-          if (saved && saved.slug) {
-            window.location.href = '/read/' + saved.slug;
-          }
-        })
-        .catch(function (e) {
-          status.textContent = 'Upload failed: ' + (e.message || 'Server error');
-          toast('PDF Upload failed: ' + e.message, 'error');
-        })
-        .then(function () {
-          input.value = '';
-        });
-    });
-
-    return h('div', { class: 'pdf-uploader' }, pick, status);
-  }
+  return h('div', { class: 'pdf-uploader' }, pick, status);
+}
 
   /* ---------- story blocks ---------- */
 
@@ -292,7 +270,6 @@
   }
 
   function drawBlocks() {
-    if (!blocksBox) return;
     blocksBox.textContent = '';
     if (!current.blocks.length) {
       blocksBox.append(h('p', { class: 'muted empty-blocks', text: 'Your story is empty. Add a heading, some text or an artwork photo below.' }));
@@ -337,13 +314,13 @@
   function payload() {
     return {
       title: current.title,
-      category: current.category || 'Issues',
-      dek: current.dek || '',
-      cover: current.cover || '',
+      category: current.category,
+      dek: current.dek,
+      cover: current.cover,
       pdf_url: current.pdf_url || '',
       featured: !!current.featured,
-      status: current.status || 'draft',
-      blocks: current.blocks || []
+      status: current.status,
+      blocks: current.blocks
     };
   }
 
@@ -527,7 +504,7 @@
 
   function showEditor(id) {
     if (!id) {
-      current = { title: '', category: 'Issues', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
+      current = { title: '', category: 'Features', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
       dirty = false;
       drawEditor();
       return;
@@ -536,6 +513,7 @@
     app.append(h('p', { class: 'muted', text: 'Loading…' }));
     guard(AVD.adminGet(id)).then(function (a) {
       current = a;
+      current.pdf_url = a.pdfUrl || '';
       dirty = false;
       drawEditor();
     }).catch(function (e) {
@@ -581,15 +559,13 @@
     }
   });
 
-  var signoutBtn = document.getElementById('signout');
-  if (signoutBtn) {
-    signoutBtn.addEventListener('click', function () {
-      if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
-      dirty = false;
-      AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin/login.html'; });
-    });
-  }
+  document.getElementById('signout').addEventListener('click', function () {
+    if (dirty && !window.confirm('You have unsaved changes. Sign out anyway?')) return;
+    dirty = false;
+    AVD.signOut().catch(function () {}).then(function () { window.location.href = '/admin/login.html'; });
+  });
 
+  // CSV download of email sign-ups
   var csvBtn = document.getElementById('subs-csv');
   if (csvBtn) {
     csvBtn.addEventListener('click', function () {
@@ -604,6 +580,7 @@
     });
   }
 
+  // Only open the editor if signed in; otherwise go to the sign-in page.
   AVD.getSession().then(function (s) {
     if (!s) { window.location.replace('/admin/login.html'); return; }
     route();

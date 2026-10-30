@@ -1,24 +1,13 @@
 /*
-- HOLIX reader: loads one story or PDF magazine issue and shows it as a book.
-- Fetch the story (and a few related ones for the last page).
-- Measure the text at the real page size and split it into pages (paginate) or render embedded PDF viewer.
-- Build cover, title page, content pages, end page and back cover.
-- Hand the pages to AV.Book, which does the opening and the page turns.
-- All story text goes in with textContent, never innerHTML.
+ * AUTOVANT reader: loads one story and shows it as a book.
+ *
+ * 1. Fetch the story (and a few related ones for the last page).
+ * 2. Measure the text at the real page size and split it into pages (paginate).
+ * 3. Build cover, title page, content pages, end page and back cover.
+ * 4. Hand the pages to AV.Book, which does the opening and the page turns.
+ *
+ * All story text goes in with textContent, never innerHTML.
  */
-function recordView(articleId) {
-    if (!articleId) return;
-    if (window.supabase) {
-      supabase.rpc('increment_article_views', { article_id: articleId })
-        .then(function (res) {
-          if (res.error) console.error('Error logging view:', res.error.message);
-        })
-        .catch(function (err) {
-          console.error('Failed to log view:', err);
-        });
-    }
-}
-
 (function () {
   'use strict';
   var h = AV.h;
@@ -57,9 +46,7 @@ function recordView(articleId) {
 
   function readMinutes(a) {
     var words = 0;
-    if (Array.isArray(a.blocks)) {
-      a.blocks.forEach(function (b) { if (b.type === 'text') words += b.text.split(/\s+/).filter(Boolean).length; });
-    }
+    a.blocks.forEach(function (b) { if (b.type === 'text') words += b.text.split(/\s+/).filter(Boolean).length; });
     return Math.max(1, Math.round(words / 200));
   }
 
@@ -73,11 +60,10 @@ function recordView(articleId) {
 
   /* ---------- story blocks -> units ---------- */
 
+  // A "unit" is the smallest thing that can sit on a page: one paragraph, one heading, one picture...
   function makeUnits(blocks) {
     var out = [];
     var leadDone = false;
-    if (!Array.isArray(blocks)) return out;
-
     blocks.forEach(function (b) {
       if (b.type === 'heading' && b.text) {
         out.push({ kind: 'heading', text: b.text });
@@ -147,6 +133,12 @@ function recordView(articleId) {
 
   function withText(u, text) { return Object.assign({}, u, { text: text }); }
 
+  /*
+   * Split units into pages. Returns a list of page descriptions:
+   *   { kind: 'text', units: [...] }, { kind: 'fill', block }, { kind: 'spreadL' | 'spreadR', block }
+   * Content page n sits at book page n + 2. On wide screens a two-page picture must start on a
+   * left (odd-numbered) page, so it is placed where the numbering works out.
+   */
   function paginate(units, fits, spreadMode) {
     var out = [];
     var cur = [];
@@ -206,6 +198,7 @@ function recordView(articleId) {
     while (queue.length) {
       var u = queue.shift();
 
+      // A two-page picture cannot span two pages on a narrow screen, so it sits inline across the page.
       if (u.kind === 'spread' && !spreadMode) u = Object.assign({}, u, { kind: 'fig' });
 
       if (u.kind === 'fill') { flush(); pushPage({ kind: 'fill', block: u.block }); continue; }
@@ -232,11 +225,12 @@ function recordView(articleId) {
         flush();
         continue;
       }
-      if (!cur.length) { cur.push(u); flush(); continue; }
+      if (!cur.length) { cur.push(u); flush(); continue; } // too big even alone: keep it, the page clips it
       flush();
       queue.unshift(u);
     }
     flush();
+    // A two-page picture that never found a left page becomes a full-page picture.
     while (pending.length) pushPage({ kind: 'fill', block: pending.shift().block });
     return out;
   }
@@ -245,23 +239,23 @@ function recordView(articleId) {
 
   function foot(index) {
     return h('div', { class: 'page__foot' },
-      h('span', { text: 'HOLIX · ' + (article.category || 'Issues') }),
+      h('span', { text: 'Autovant · ' + article.category }),
       h('span', { class: 'page__num', text: String(index) }));
   }
 
   function coverPage() {
-    var c = AV.catByName ? AV.catByName(article.category) : { tx: '' };
-    var page = h('section', { class: 'page page--cover ' + (c ? c.tx : '') });
+    var c = AV.catByName(article.category);
+    var page = h('section', { class: 'page page--cover ' + c.tx });
     if (article.cover) page.append(h('img', { src: article.cover, alt: '' }));
     page.append(
       h('div', { class: 'cover__shade' }),
       h('div', { class: 'cover__top' },
-        h('span', { class: 'cover__mark', text: 'HOLIX' }),
+        h('span', { class: 'cover__mark', text: 'Autovant' }),
         h('span', { class: 'tag', text: fmtDate(article.publishedAt || article.updatedAt) })),
       h('div', { class: 'cover__bottom' },
-        h('span', { class: 'tag', text: article.category || 'Issues' }),
+        h('span', { class: 'tag', text: article.category }),
         h('h1', { class: 'cover__title', text: article.title }),
-        h('p', { class: 'cover__line', text: 'Digital Magazine' }))
+        h('p', { class: 'cover__line', text: 'Beyond the factory' }))
     );
     return page;
   }
@@ -269,12 +263,12 @@ function recordView(articleId) {
   function titlePage(heads) {
     var items = heads.slice(0, 6);
     var body = h('div', { class: 'page__body page__body--title' },
-      h('span', { class: 'tag', text: article.category || 'Issues' }),
+      h('span', { class: 'tag', text: article.category }),
       h('h2', { class: 'title-h', text: article.title }),
       article.dek ? h('p', { class: 'title-dek', text: article.dek }) : null,
       h('p', { class: 'title-meta', text: fmtDate(article.publishedAt || article.updatedAt) + ' · ' + readMinutes(article) + ' min read' }),
-      items.length >= 2 ? h('nav', { class: 'toc', 'aria-label': 'In this issue' },
-        h('span', { class: 'tag', text: 'In this issue' }),
+      items.length >= 2 ? h('nav', { class: 'toc', 'aria-label': 'In this feature' },
+        h('span', { class: 'tag', text: 'In this feature' }),
         h('ol', null, items.map(function (it) {
           return h('li', null, h('button', { type: 'button', class: 'toc__btn', 'data-page': it.index },
             h('span', { text: it.text }), h('span', { class: 'toc__n', text: String(it.index) })));
@@ -299,34 +293,26 @@ function recordView(articleId) {
     return page;
   }
 
-  function pdfEmbedPage(pdfUrl) {
-    var iframe = h('iframe', {
-      src: pdfUrl + '#toolbar=0&navpanes=0&view=FitH',
-      style: 'width: 100%; height: 100%; border: none; background: #111;'
-    });
-    return h('section', { class: 'page page--pdf', style: 'width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;' }, iframe);
-  }
-
   function colophonPage(index) {
     return h('section', { class: 'page page--colophon' },
       h('div', { class: 'page__body page__body--col' },
-        h('span', { class: 'col-mark', text: 'H' }),
-        h('p', { class: 'col-p', text: 'HOLIX Digital Magazine Issue.' })),
+        h('span', { class: 'col-mark', text: 'A' }),
+        h('p', { class: 'col-p', text: 'Every spec in AUTOVANT is labelled Official, Verified or Our view, so you always know where a fact came from.' })),
       foot(index));
   }
 
   function endPage(index) {
     var list = related.slice(0, 3).map(function (r) {
       return h('a', { class: 'next-item', href: '/read/' + r.slug, 'data-book': '' },
-        h('span', { class: 'tag', text: r.category || 'Issues' }),
+        h('span', { class: 'tag', text: r.category }),
         h('span', { class: 'next-item__t', text: r.title }));
     });
     return h('section', { class: 'page page--end' },
       h('div', { class: 'page__body page__body--end' },
-        h('span', { class: 'end-mark', text: 'End of issue' }),
+        h('span', { class: 'end-mark', text: 'End of feature' }),
         h('h2', { class: 'end-h', text: 'Keep reading' }),
-        list.length ? h('div', { class: 'next-list' }, list) : h('p', { class: 'end-p', text: 'More issues are on their way.' }),
-        h('a', { class: 'link', href: '/', text: 'Back to HOLIX' })),
+        list.length ? h('div', { class: 'next-list' }, list) : h('p', { class: 'end-p', text: 'More features are on their way.' }),
+        h('a', { class: 'link', href: '/', text: 'Back to the magazine' })),
       foot(index));
   }
 
@@ -334,10 +320,11 @@ function recordView(articleId) {
     return h('section', { class: 'page page--back tx-leather' },
       h('div', { class: 'back__shade' }),
       h('div', { class: 'back__inner' },
-        h('span', { class: 'cover__mark', text: 'HOLIX' }),
-        h('p', { class: 'back__line', text: 'Digital Magazine.' })));
+        h('span', { class: 'cover__mark', text: 'Autovant' }),
+        h('p', { class: 'back__line', text: 'Beyond the factory.' })));
   }
 
+  // Cover, title page, content, optional filler, end page, back cover.
   function makePages(m) {
     var measurer = makeMeasurer(m.spread);
     var descs = paginate(makeUnits(article.blocks), measurer.fits, m.spread);
@@ -373,7 +360,7 @@ function recordView(articleId) {
     var r = stage.getBoundingClientRect();
     var spread = r.width >= 880;
     var availW = Math.max(240, r.width - 32);
-    var availH = Math.max(280, r.height - 44);
+    var availH = Math.max(280, r.height - 44); // leaves room for the hint line under the book
     var pageW;
     var pageH;
     if (spread) {
@@ -397,20 +384,6 @@ function recordView(articleId) {
     if (book) book.destroy();
     var m = metrics();
     sizeKey = m.key;
-
-    // Handle PDF Issues directly:
-    if (article && article.pdf_url) {
-      wrap.style.width = '100%';
-      wrap.style.height = 'calc(100vh - 120px)';
-      wrap.textContent = '';
-      wrap.append(pdfEmbedPage(article.pdf_url));
-      if (posEl) posEl.textContent = 'PDF Issue';
-      if (fillEl) fillEl.style.width = '100%';
-      if (btnPrev) btnPrev.disabled = true;
-      if (btnNext) btnNext.disabled = true;
-      return;
-    }
-
     wrap.style.setProperty('--page-w', m.pageW + 'px');
     wrap.style.setProperty('--page-h', m.pageH + 'px');
     wrap.style.width = (m.spread ? m.pageW * 2 : m.pageW) + 'px';
@@ -432,16 +405,16 @@ function recordView(articleId) {
     else if (book.spread && s === book.leaves.length) label = 'Back cover';
     else if (book.spread) label = 'Pages ' + (2 * s - 1) + '–' + Math.min(2 * s, pageCount) + ' of ' + pageCount;
     else label = 'Page ' + s + ' of ' + pageCount;
-    if (posEl) posEl.textContent = label;
-    if (fillEl) fillEl.style.width = (book.maxState ? (s / book.maxState) * 100 : 0) + '%';
-    if (btnPrev) btnPrev.disabled = s === 0;
-    if (btnNext) btnNext.disabled = s >= book.maxState;
+    posEl.textContent = label;
+    fillEl.style.width = (book.maxState ? (s / book.maxState) * 100 : 0) + '%';
+    btnPrev.disabled = s === 0;
+    btnNext.disabled = s >= book.maxState;
   }
 
   function quiet() {
     if (quietNote) return;
     quietNote = true;
-    if (note) note.classList.add('is-quiet');
+    note.classList.add('is-quiet');
   }
 
   function turn(dir) {
@@ -456,21 +429,21 @@ function recordView(articleId) {
   }
 
   function closeBook() {
-    var url = closeEl ? closeEl.getAttribute('href') : '/';
+    var url = closeEl.getAttribute('href') || '/';
     if (book && book.state > 0 && !reduced) {
       book.goTo(0, true);
-      setTimeout(function () { leaveTo(url || '/'); }, TURN_MS + 250);
+      setTimeout(function () { leaveTo(url); }, TURN_MS + 250);
     } else {
-      leaveTo(url || '/');
+      leaveTo(url);
     }
   }
 
   /* ---------- input ---------- */
 
   function wire() {
-    if (btnPrev) btnPrev.addEventListener('click', function () { turn(-1); });
-    if (btnNext) btnNext.addEventListener('click', function () { turn(1); });
-    if (closeEl) closeEl.addEventListener('click', function (e) { e.preventDefault(); closeBook(); });
+    btnPrev.addEventListener('click', function () { turn(-1); });
+    btnNext.addEventListener('click', function () { turn(1); });
+    closeEl.addEventListener('click', function (e) { e.preventDefault(); closeBook(); });
 
     document.addEventListener('keydown', function (e) {
       if (e.altKey || e.ctrlKey || e.metaKey || !book) return;
@@ -483,6 +456,7 @@ function recordView(articleId) {
       else if (e.key === 'Escape') { closeBook(); }
     });
 
+    // Click or tap a page to turn it. Links, buttons and selected text are left alone.
     wrap.addEventListener('click', function (e) {
       if (!book) return;
       var jump = e.target.closest('[data-page]');
@@ -499,6 +473,7 @@ function recordView(articleId) {
       }
     });
 
+    // Swipe on touch screens.
     var sx = null;
     var sy = 0;
     var st = 0;
@@ -524,79 +499,76 @@ function recordView(articleId) {
   /* ---------- start ---------- */
 
   function showError(title, text) {
-    if (controls) controls.hidden = true;
-    if (note) note.hidden = true;
+    controls.hidden = true;
+    note.hidden = true;
     stage.append(h('div', { class: 'reader-error' },
       h('h1', { text: title }),
       h('p', { text: text }),
-      h('a', { class: 'link', href: '/', text: 'Back to HOLIX' })));
+      h('a', { class: 'link', href: '/', text: 'Back to AUTOVANT' })));
+  }
+
+  // A story with an uploaded PDF opens the PDF itself instead of the block-built book.
+  function showPdf(url) {
+    controls.hidden = true;
+    note.hidden = true;
+    wrap.hidden = true;
+    stage.classList.add('stage--pdf');
+    setBackLink();
+    closeEl.addEventListener('click', function (e) { e.preventDefault(); leaveTo(closeEl.getAttribute('href') || '/'); });
+    stage.append(h('div', { class: 'pdf-frame' },
+      h('iframe', { src: url + '#view=FitH', title: article.title, class: 'pdf-frame__view' }),
+      h('a', { class: 'link pdf-frame__open', href: url, target: '_blank', rel: 'noopener', text: 'Open or download the PDF' })));
   }
 
   function setBackLink() {
     try {
       var ref = new URL(document.referrer);
       if (ref.origin === location.origin && !/^\/(admin|read)(\/|$)/.test(ref.pathname)) {
-        if (closeEl) {
-          closeEl.setAttribute('href', ref.pathname + ref.search + ref.hash);
-          closeEl.textContent = 'Close the book';
-        }
+        closeEl.setAttribute('href', ref.pathname + ref.search + ref.hash);
+        closeEl.textContent = 'Close the book';
       }
-    } catch (e) { }
+    } catch (e) { /* no usable referrer: the link stays on the homepage */ }
   }
 
-function start() {
+  function start() {
     var fontsReady = (document.fonts && document.fonts.ready)
       ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1800); })])
       : Promise.resolve();
 
-    // 1. Fetch the main issue first so related list errors cannot block the reader
-    AVD.getBySlug(slug)
-      .then(function (resArticle) {
-        article = resArticle;
+    Promise.all([
+      AVD.getBySlug(slug),
+      AVD.listPublished().catch(function () { return []; }),
+      fontsReady
+    ]).then(function (res) {
+      article = res[0];
+      related = res[1].filter(function (a) { return a.slug !== article.slug; });
+      
+      // Update page title and text references to Holix
+      document.title = article.title + ' | HOLIX';
+      titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
 
-        document.title = article.title + ' | HOLIX';
-        if (titleEl) titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
+      // --- RECORD ISSUE VIEW HERE ---
+      if (article && article.id && article.status === 'published') {
+        AVD.recordView(article.id);
+      }
 
-        if (article && article.id) {
-          recordView(article.id);
-        }
+      if (article.pdfUrl) { showPdf(article.pdfUrl); return; }
 
-        setBackLink();
-        wire();
-
-        // 2. Safely attempt to fetch related articles without crashing if it fails
-        AVD.listPublished()
-          .then(function (list) {
-            related = (list || []).filter(function (a) { return a.slug !== article.slug; });
-          })
-          .catch(function () {
-            related = [];
-          })
-          .then(function () {
-            return fontsReady;
-          })
-          .then(function () {
-            build(0, null);
-            if (note) note.textContent = 'Opening the issue…';
-            setTimeout(function () {
-              if (!book || book.state !== 0) return;
-              book.goTo(1, true);
-              if (note) {
-                note.textContent = book.spread
-                  ? 'Click a page, press ← →, or swipe to turn the pages.'
-                  : 'Tap the page edges or swipe to turn the pages.';
-              }
-            }, reduced ? 0 : 1100);
-          });
-      })
-      .catch(function (err) {
-        console.error('Reader Error:', err);
-        if (err && (err.status === 404 || err.code === 'PGRST116')) {
-          showError('Issue not found', 'This issue is not published, or the link is wrong.');
-        } else {
-          showError('Could not open the story', (err && err.message) ? err.message : 'Check your connection and try again.');
-        }
-      });
+      setBackLink();
+      wire();
+      build(0, null);
+      note.textContent = 'Opening the book…';
+      setTimeout(function () {
+        if (!book || book.state !== 0) return;
+        book.goTo(1, true);
+        note.textContent = book.spread
+          ? 'Click a page, press ← →, or swipe to turn the pages.'
+          : 'Tap the page edges or swipe to turn the pages.';
+      }, reduced ? 0 : 1100);
+    }).catch(function (err) {
+      if (err && err.status === 404) showError('Story not found', 'This story is not published, or the link is wrong.');
+      else showError('Could not open the story', 'Check your connection and try again.');
+    });
   }
 
   start();

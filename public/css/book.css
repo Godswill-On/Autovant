@@ -420,3 +420,8 @@ transform: translateZ(1px);
 @media (prefers-reduced-motion: reduce) {
   .book, .leaf, .book__under, .reader-bar-fill { transition: none; }
 }
+/* ---------- PDF issue ---------- */
+.stage--pdf { display: flex; }
+.pdf-frame { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; width: min(1100px, 100%); margin: 0 auto; padding: 0 var(--gutter) 16px; min-height: 0; }
+.pdf-frame__view { flex: 1 1 auto; width: 100%; min-height: 0; border: 1px solid var(--line); background: var(--coal); }
+.pdf-frame__open { align-self: center; }

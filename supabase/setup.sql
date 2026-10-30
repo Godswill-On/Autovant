@@ -73,3 +73,38 @@ create policy "editor updates photos" on storage.objects
 drop policy if exists "editor deletes photos" on storage.objects;
 create policy "editor deletes photos" on storage.objects
   for delete to authenticated using (bucket_id = 'photos');
+
+-- 4. PDF issues -----------------------------------------------------------
+alter table public.articles add column if not exists pdf_url text not null default '';
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('issues', 'issues', true, 52428800, array['application/pdf'])
+on conflict (id) do update
+  set public = true, file_size_limit = 52428800, allowed_mime_types = array['application/pdf'];
+
+drop policy if exists "editor uploads issues" on storage.objects;
+create policy "editor uploads issues" on storage.objects
+  for insert to authenticated with check (bucket_id = 'issues');
+
+drop policy if exists "editor updates issues" on storage.objects;
+create policy "editor updates issues" on storage.objects
+  for update to authenticated using (bucket_id = 'issues');
+
+drop policy if exists "editor deletes issues" on storage.objects;
+create policy "editor deletes issues" on storage.objects
+  for delete to authenticated using (bucket_id = 'issues');
+
+-- 5. View counter ---------------------------------------------------------
+alter table public.articles add column if not exists views bigint not null default 0;
+
+create or replace function public.increment_article_views(article_id uuid)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.articles set views = views + 1
+  where id = article_id and status = 'published';
+$$;
+
+grant execute on function public.increment_article_views(uuid) to anon, authenticated;

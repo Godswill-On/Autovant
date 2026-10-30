@@ -2,7 +2,7 @@
 
 :root {
   /* New Holix Color Palette */
-  --bg-dark: #1b1464;            /* Deep Navy Background */
+  --bg-dark: #0b0838;            /* Deep Navy Background */
   --accent-pink: #e0006d;        /* Vivid Magenta Accent */
   --accent-purple: #7d328d;      /* Deep Purple Accent */
   --accent-orange: #ef7b00;      /* Warm Orange */
@@ -10,10 +10,10 @@
   --text-light: #fffff3;         /* Off-White Text */
 
   /* Mapped Theme Variables */
-  --ink: #1b1464;
-  --coal: #241b7a;
-  --graphite: #32258c;
-  --line: #4b3da8;
+  --ink: #0b0838;
+  --coal: #120d4a;
+  --graphite: #1b1468;
+  --line: #2e2480;
   --text: #fffff3;
   --muted: #cfc9e2;
   --champagne: #eaa029;
