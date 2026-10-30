@@ -122,6 +122,7 @@
       updatedAt: r.updated_at,
       publishedAt: r.published_at,
       pdfUrl: r.pdf_url || '',
+      views: Number(r.views) || 0,
       blocks: Array.isArray(r.blocks) ? r.blocks : []
     };
   }
@@ -132,7 +133,7 @@
     }, 0);
     return {
       id: a.id, slug: a.slug, title: a.title, category: a.category, dek: a.dek, cover: a.cover,
-      featured: a.featured, status: a.status, publishedAt: a.publishedAt, updatedAt: a.updatedAt,
+      featured: a.featured, status: a.status, publishedAt: a.publishedAt, updatedAt: a.updatedAt, views: a.views,
       minutes: Math.max(1, Math.round(words / 200))
     };
   }

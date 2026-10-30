@@ -425,3 +425,10 @@ transform: translateZ(1px);
 .pdf-frame { flex: 1 1 auto; display: flex; flex-direction: column; gap: 10px; width: min(1100px, 100%); margin: 0 auto; padding: 0 var(--gutter) 16px; min-height: 0; }
 .pdf-frame__view { flex: 1 1 auto; width: 100%; min-height: 0; border: 1px solid var(--line); background: var(--coal); }
 .pdf-frame__open { align-self: center; }
+
+.page--pdf { background: #fff; background-image: none; }
+.page--pdf > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; user-select: none; -webkit-user-drag: none; }
+.page--pdf-blank { background: var(--paper) var(--grain); }
+.page--pdf.page--right::after { background: linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0, rgba(0, 0, 0, 0.08) 4%, rgba(0, 0, 0, 0) 12%); }
+.page--pdf.page--left::after { background: linear-gradient(270deg, rgba(0, 0, 0, 0.28) 0, rgba(0, 0, 0, 0.08) 4%, rgba(0, 0, 0, 0) 12%); }
+.page--pdf > img:not([src]) { visibility: hidden; }

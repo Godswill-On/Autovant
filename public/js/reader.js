@@ -35,6 +35,8 @@
   var pageCount = 0;
   var sizeKey = '';
   var quietNote = false;
+  var pdfDoc = null;      // set when the story is an uploaded PDF
+  var pdfImgs = [];       // rendered image for each PDF page
 
   /* ---------- small helpers ---------- */
 
@@ -326,6 +328,7 @@
 
   // Cover, title page, content, optional filler, end page, back cover.
   function makePages(m) {
+    if (pdfDoc) return makePdfPages(m);
     var measurer = makeMeasurer(m.spread);
     var descs = paginate(makeUnits(article.blocks), measurer.fits, m.spread);
     measurer.done();
@@ -507,7 +510,93 @@
       h('a', { class: 'link', href: '/', text: 'Back to AUTOVANT' })));
   }
 
-  // A story with an uploaded PDF opens the PDF itself instead of the block-built book.
+  /* ---------- PDF issues: each PDF page becomes a book page ---------- */
+
+  var PDFJS_VER = '3.11.174';
+  var PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/' + PDFJS_VER + '/';
+
+  function loadScript(src) {
+    return new Promise(function (resolve, reject) {
+      var el = document.createElement('script');
+      el.src = src;
+      el.onload = resolve;
+      el.onerror = function () { reject(new Error('Could not load the PDF reader.')); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function pdfPage(i) {
+    var img = h('img', { alt: 'Page ' + (i + 1), draggable: 'false' });
+    if (pdfImgs[i]) img.src = pdfImgs[i];
+    var page = h('section', { class: 'page page--pdf' }, img);
+    page._img = img;
+    return page;
+  }
+
+  function makePdfPages(m) {
+    var els = [];
+    for (var i = 0; i < pdfDoc.numPages; i++) els.push(pdfPage(i));
+    // On wide screens the book needs an even number of pages; a blank back cover fills the gap.
+    if (m.spread && els.length % 2 === 1) els.push(h('section', { class: 'page page--pdf page--pdf-blank' }));
+    return els;
+  }
+
+  // Render pages one at a time (first pages first) and drop each into the book as it is ready.
+  function renderPdfPages() {
+    var n = pdfDoc.numPages;
+    var next = 1;
+    function step() {
+      if (next > n) return Promise.resolve();
+      var num = next++;
+      return pdfDoc.getPage(num).then(function (pg) {
+        var vp1 = pg.getViewport({ scale: 1 });
+        var vp = pg.getViewport({ scale: Math.min(2.2, 1400 / vp1.width) });
+        var canvas = document.createElement('canvas');
+        canvas.width = Math.floor(vp.width);
+        canvas.height = Math.floor(vp.height);
+        return pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function () {
+          return new Promise(function (resolve) {
+            canvas.toBlob(function (blob) {
+              pdfImgs[num - 1] = blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/jpeg', 0.85);
+              if (book) book.pages.forEach(function (el) {
+                if (el._img && el._img.alt === 'Page ' + num) el._img.src = pdfImgs[num - 1];
+              });
+              resolve();
+            }, 'image/jpeg', 0.88);
+          });
+        });
+      }).then(step);
+    }
+    return step();
+  }
+
+  function openPdfBook(url) {
+    note.textContent = 'Loading the magazine…';
+    return loadScript(PDFJS_BASE + 'pdf.min.js').then(function () {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'pdf.worker.min.js';
+      return window.pdfjsLib.getDocument({ url: url }).promise;
+    }).then(function (doc) {
+      pdfDoc = doc;
+      return doc.getPage(1);
+    }).then(function (pg) {
+      var vp = pg.getViewport({ scale: 1 });
+      PAGE_RATIO = vp.width / vp.height; // pages take the PDF's own shape
+      setBackLink();
+      wire();
+      build(0, null);
+      note.textContent = 'Opening the book…';
+      setTimeout(function () {
+        if (!book || book.state !== 0) return;
+        book.goTo(1, true);
+        note.textContent = book.spread
+          ? 'Click a page, press ← →, or swipe to turn the pages.'
+          : 'Tap the page edges or swipe to turn the pages.';
+      }, reduced ? 0 : 1100);
+      return renderPdfPages();
+    });
+  }
+
+  // Fallback if the PDF cannot be turned into a book: show it in the browser's own viewer.
   function showPdf(url) {
     controls.hidden = true;
     note.hidden = true;
@@ -552,7 +641,14 @@
         AVD.recordView(article.id);
       }
 
-      if (article.pdfUrl) { showPdf(article.pdfUrl); return; }
+      if (article.pdfUrl) {
+        return openPdfBook(article.pdfUrl).catch(function (err) {
+          console.error('PDF book failed:', err);
+          if (book) { book.destroy(); book = null; }
+          pdfDoc = null;
+          showPdf(article.pdfUrl);
+        });
+      }
 
       setBackLink();
       wire();
