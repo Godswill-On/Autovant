@@ -412,6 +412,7 @@
     fillEl.style.width = (book.maxState ? (s / book.maxState) * 100 : 0) + '%';
     btnPrev.disabled = s === 0;
     btnNext.disabled = s >= book.maxState;
+    if (pdfDoc) pdfSync();
   }
 
   function quiet() {
@@ -495,6 +496,7 @@
 
     window.addEventListener('resize', debounce(function () {
       if (!book || metrics().key === sizeKey) return;
+      if (pdfDoc) Object.keys(pdfImgs).forEach(function (k) { releasePdfPage(Number(k)); });
       build(0, book.visiblePages()[0]);
     }, 250));
   }
@@ -541,33 +543,91 @@
     return els;
   }
 
-  // Render pages one at a time (first pages first) and drop each into the book as it is ready.
-  function renderPdfPages() {
-    var n = pdfDoc.numPages;
-    var next = 1;
-    function step() {
-      if (next > n) return Promise.resolve();
-      var num = next++;
-      return pdfDoc.getPage(num).then(function (pg) {
-        var vp1 = pg.getViewport({ scale: 1 });
-        var vp = pg.getViewport({ scale: Math.min(2.2, 1400 / vp1.width) });
-        var canvas = document.createElement('canvas');
-        canvas.width = Math.floor(vp.width);
-        canvas.height = Math.floor(vp.height);
-        return pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function () {
-          return new Promise(function (resolve) {
-            canvas.toBlob(function (blob) {
-              pdfImgs[num - 1] = blob ? URL.createObjectURL(blob) : canvas.toDataURL('image/jpeg', 0.85);
-              if (book) book.pages.forEach(function (el) {
-                if (el._img && el._img.alt === 'Page ' + num) el._img.src = pdfImgs[num - 1];
-              });
-              resolve();
-            }, 'image/jpeg', 0.88);
-          });
+  /*
+   * Only the pages near the reader are kept as images. Rendering a whole magazine at once
+   * runs a phone out of memory and the browser tab crashes, so pages are drawn on demand
+   * and released again once they are far away.
+   */
+  var pdfQueue = [];
+  var pdfRunning = false;
+
+  function pdfTargetWidth() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    var w = Math.ceil((book && book.pages.length ? parseInt(wrap.style.getPropertyValue('--page-w'), 10) || 480 : 480) * dpr);
+    return Math.max(500, Math.min(w, 1000));
+  }
+
+  function setPdfImg(i, url) {
+    if (!book || !book.pages[i] || !book.pages[i]._img) return;
+    if (url) book.pages[i]._img.src = url; else book.pages[i]._img.removeAttribute('src');
+  }
+
+  function releasePdfPage(i) {
+    if (pdfImgs[i] && pdfImgs[i].indexOf('blob:') === 0) URL.revokeObjectURL(pdfImgs[i]);
+    delete pdfImgs[i];
+    setPdfImg(i, null);
+  }
+
+  function renderOne(i) {
+    return pdfDoc.getPage(i + 1).then(function (pg) {
+      var vp1 = pg.getViewport({ scale: 1 });
+      var vp = pg.getViewport({ scale: pdfTargetWidth() / vp1.width });
+      var canvas = document.createElement('canvas');
+      canvas.width = Math.floor(vp.width);
+      canvas.height = Math.floor(vp.height);
+      return pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function () {
+        return new Promise(function (resolve) {
+          canvas.toBlob(function (blob) {
+            var url = blob ? URL.createObjectURL(blob) : '';
+            canvas.width = canvas.height = 0; // hand the canvas memory straight back
+            if (pg.cleanup) pg.cleanup();
+            resolve(url);
+          }, 'image/jpeg', 0.85);
         });
-      }).then(step);
+      });
+    });
+  }
+
+  function pumpPdf() {
+    if (pdfRunning || !pdfQueue.length || !pdfDoc) return;
+    var i = pdfQueue.shift();
+    if (pdfImgs[i]) { pumpPdf(); return; }
+    pdfRunning = true;
+    renderOne(i).then(function (url) {
+      if (url) { pdfImgs[i] = url; setPdfImg(i, url); }
+    }).catch(function (e) {
+      console.warn('Could not draw PDF page ' + (i + 1), e);
+    }).then(function () {
+      pdfRunning = false;
+      pumpPdf();
+    });
+  }
+
+  // Work out which pages are needed now, draw those, and let go of far-away ones.
+  function pdfSync() {
+    if (!pdfDoc || !book) return;
+    var n = pdfDoc.numPages;
+    var vis = book.visiblePages().filter(function (i) { return i < n; });
+    if (!vis.length) vis = [n - 1];
+    var span = book.spread ? 3 : 2;
+    var lo = Math.max(0, Math.min.apply(null, vis) - span);
+    var hi = Math.min(n - 1, Math.max.apply(null, vis) + span);
+
+    Object.keys(pdfImgs).forEach(function (k) {
+      var i = Number(k);
+      if (i < lo - 1 || i > hi + 1) releasePdfPage(i);
+    });
+
+    var order = [];
+    vis.forEach(function (i) { order.push(i); });
+    for (var d = 1; d <= span; d++) {
+      var after = Math.max.apply(null, vis) + d;
+      var before = Math.min.apply(null, vis) - d;
+      if (after <= hi) order.push(after);
+      if (before >= lo) order.push(before);
     }
-    return step();
+    pdfQueue = order.filter(function (i) { return !pdfImgs[i]; });
+    pumpPdf();
   }
 
   function openPdfBook(url) {
@@ -592,7 +652,7 @@
           ? 'Click a page, press ← →, or swipe to turn the pages.'
           : 'Tap the page edges or swipe to turn the pages.';
       }, reduced ? 0 : 1100);
-      return renderPdfPages();
+      pdfSync();
     });
   }
 
