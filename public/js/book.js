@@ -76,9 +76,13 @@
     var L = this.leaves.length;
     var s = this.state;
     var visible = this.visiblePages();
+    // Only leaves near the reader are drawn. Every leaf is its own 3D layer, and a magazine
+    // with dozens of them at once runs a phone out of memory.
+    var near = this.spread ? 3 : 2;
     this.leaves.forEach(function (leaf, k) {
       leaf.classList.toggle('flipped', k < s);
       leaf.style.zIndex = String(k < s ? k : L - k);
+      leaf.style.display = Math.abs(k - s) <= near ? '' : 'none';
     });
     this.pages.forEach(function (page, i) {
       var on = visible.indexOf(i) > -1;
@@ -113,6 +117,9 @@
     clearTimeout(this.endTimer);
     var self = this;
 
+    // A long jump would have to draw every leaf in between: skip the animation instead.
+    if (Math.abs(target - from) > 3) animate = false;
+
     if (!animate || this.turnMs === 0) {
       this.layout();
       this.onChange(this);
@@ -120,6 +127,9 @@
     }
 
     var forward = target > from;
+    for (var q = Math.min(from, target) - 1; q <= Math.max(from, target) + 1; q++) {
+      if (this.leaves[q]) this.leaves[q].style.display = '';
+    }
     var order = [];
     var k;
     if (forward) { for (k = from; k < target; k++) order.push(k); }
