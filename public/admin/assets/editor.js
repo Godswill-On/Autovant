@@ -131,43 +131,66 @@
 
   /* ---------- PDF uploader UI ---------- */
 
- function pdfUploader(pdfUrl, onChange) {
-  var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;', text: pdfUrl ? 'PDF attached' : 'No PDF attached' });
+ function pdfUploader(pdfUrl, pdfPages, onChange) {
+  var hasPages = !!(pdfPages && pdfPages.length);
+  var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;' });
   var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
-  var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue', input);
+  var pickText = h('span', { text: pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue' });
+  var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pickText, input);
+  var prep = h('button', { type: 'button', class: 'btn btn--small', style: 'width:100%; margin-top:8px;', text: 'Prepare pages for phones' });
+
+  function show() {
+    if (!pdfUrl) status.textContent = 'No PDF attached';
+    else if (hasPages) status.textContent = '✓ PDF attached. ' + pdfPages.length + ' pages ready for phones and computers.';
+    else status.textContent = 'PDF attached, but its pages are not prepared for phones yet.';
+    prep.hidden = !(pdfUrl && !hasPages);
+  }
+
+  function prepare(file, sizeMb, url) {
+    status.textContent = 'Preparing pages for phones… keep this tab open.';
+    prep.disabled = true;
+    return guard(AVD.uploadPdfPages(file, function (i, n) {
+      status.textContent = 'Preparing pages for phones… ' + i + ' of ' + n;
+    })).then(function (pages) {
+      pdfUrl = url; pdfPages = pages; hasPages = pages.length > 0;
+      onChange(url, pages);
+      show();
+      toast('Pages ready. Remember to click Save.');
+    }).catch(function (e) {
+      status.textContent = 'Could not prepare pages: ' + (e.message || 'error');
+      toast('Could not prepare pages: ' + (e.message || 'error'), 'error');
+    }).then(function () { prep.disabled = false; });
+  }
 
   input.addEventListener('change', function () {
     var file = input.files && input.files[0];
     if (!file) return;
-
     var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
     status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
-
-    var pdfLink;
     uploadFile(file)
       .then(function (url) {
-        pdfLink = url;
-        status.textContent = 'Preparing pages…';
-        return guard(AVD.uploadPdfPages(file, function (i, n) {
-          status.textContent = 'Preparing pages for phones… ' + i + ' of ' + n;
-        }));
-      })
-      .then(function (pages) {
-        onChange(pdfLink, pages);
-        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB, ' + pages.length + ' pages)';
-        pick.firstChild.textContent = 'Replace PDF Issue';
-        toast('PDF magazine uploaded. Remember to Save.');
+        pickText.textContent = 'Replace PDF Issue';
+        return prepare(file, sizeMb, url);
       })
       .catch(function (e) {
         status.textContent = 'Upload failed: ' + (e.message || 'Server error');
         toast('PDF Upload failed: ' + e.message, 'error');
       })
-      .then(function () {
-        input.value = '';
-      });
+      .then(function () { input.value = ''; });
   });
 
-  return h('div', { class: 'pdf-uploader' }, pick, status);
+  // For an issue uploaded earlier: fetch its PDF again and make the page pictures.
+  prep.addEventListener('click', function () {
+    status.textContent = 'Downloading the PDF…';
+    fetch(pdfUrl).then(function (r) {
+      if (!r.ok) throw new Error('Could not download the PDF.');
+      return r.blob();
+    }).then(function (blob) { return prepare(blob, '', pdfUrl); })
+      .catch(function (e) { status.textContent = 'Could not prepare pages: ' + (e.message || 'error'); });
+  });
+
+  show();
+  return h('div', { class: 'pdf-uploader' }, pick, prep, status);
 }
 
   /* ---------- story blocks ---------- */
@@ -493,7 +516,7 @@
             h('label', { class: 'check' }, featured, h('span', { text: 'Make this the cover story on the homepage' }))),
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'PDF Magazine (Optional)' }),
-            pdfUploader(current.pdf_url, function (url, pages) { current.pdf_url = url; current.pdf_pages = pages || []; markDirty(); }),
+            pdfUploader(current.pdf_url, current.pdf_pages, function (url, pages) { current.pdf_url = url; current.pdf_pages = pages || []; markDirty(); }),
             h('p', { class: 'hint', text: 'Upload a complete pre-made PDF issue instead of writing manual blocks.' })),
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'Cover photo' }),
