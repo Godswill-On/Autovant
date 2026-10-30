@@ -9,7 +9,7 @@
     { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
     { name: 'Installations', slug: 'installations', tx: 'tx-metal', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
     { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
-    
+    { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }
   ];
 
   // (Keep the rest of your common.js helper methods intact...)
