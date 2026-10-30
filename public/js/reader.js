@@ -700,6 +700,82 @@
     } catch (e) { /* no usable referrer: the link stays on the homepage */ }
   }
 
+  /* ---------- who is reading ---------- */
+
+  var READER_KEY = 'holix_reader';
+
+  function savedReader() {
+    try {
+      var r = JSON.parse(localStorage.getItem(READER_KEY) || 'null');
+      return r && r.name && r.email ? r : null;
+    } catch (e) { return null; }
+  }
+
+  function askReader() {
+    controls.hidden = true;
+    note.hidden = true;
+    return new Promise(function (resolve) {
+      var nameIn = h('input', { type: 'text', id: 'g-name', autocomplete: 'name', maxlength: '80', placeholder: 'Your name', required: '' });
+      var mailIn = h('input', { type: 'email', id: 'g-email', autocomplete: 'email', maxlength: '200', placeholder: 'you@example.com', required: '' });
+      var err = h('p', { class: 'gate__err', role: 'alert' });
+      var form = h('form', { class: 'reader-gate', novalidate: '' },
+        h('span', { class: 'tag', text: 'Before you read' }),
+        h('h1', { text: 'Who is reading?' }),
+        h('p', { class: 'gate__p', text: 'Tell us your name and email once. Each reader is counted one time, however often you come back.' }),
+        h('label', { for: 'g-name', text: 'Name' }), nameIn,
+        h('label', { for: 'g-email', text: 'Email' }), mailIn,
+        err,
+        h('button', { type: 'submit', class: 'gate__btn', text: 'Start reading' }));
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var name = nameIn.value.trim();
+        var email = mailIn.value.trim().toLowerCase();
+        if (name.length < 2) { err.textContent = 'Please enter your name.'; nameIn.focus(); return; }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { err.textContent = 'Please enter a valid email address.'; mailIn.focus(); return; }
+        var reader = { name: name.slice(0, 80), email: email };
+        try { localStorage.setItem(READER_KEY, JSON.stringify(reader)); } catch (x) { /* ignore */ }
+        form.remove();
+        resolve(reader);
+      });
+      stage.append(form);
+      nameIn.focus();
+    });
+  }
+
+  // Signed-in editors read freely and are never counted.
+  function readerGate() {
+    return AVD.getSession().catch(function () { return null; }).then(function (session) {
+      if (session) return null;
+      return savedReader() || askReader();
+    });
+  }
+
+  function openStory() {
+    controls.hidden = false;
+    note.hidden = false;
+    if (article.pdfUrl) {
+      return (article.pdfPages && article.pdfPages.length ? openPageImages(article.pdfPages)
+        : (window.innerWidth < 880 ? Promise.reject(new Error('No page pictures for this issue yet.')) : openPdfBook(article.pdfUrl))).catch(function (err) {
+        console.error('PDF book failed:', err);
+        if (book) { book.destroy(); book = null; }
+        pdfDoc = null;
+        showPdf(article.pdfUrl);
+      });
+    }
+
+    setBackLink();
+    wire();
+    build(0, null);
+    note.textContent = 'Opening the book…';
+    setTimeout(function () {
+      if (!book || book.state !== 0) return;
+      book.goTo(1, true);
+      note.textContent = book.spread
+        ? 'Click a page, press ← →, or swipe to turn the pages.'
+        : 'Tap the page edges or swipe to turn the pages.';
+    }, reduced ? 0 : 1100);
+  }
+
   function start() {
     var fontsReady = (document.fonts && document.fonts.ready)
       ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1800); })])
@@ -717,32 +793,12 @@
       document.title = article.title + ' | HOLIX';
       titleEl.textContent = (article.status !== 'published' ? 'Draft preview · ' : '') + article.title;
 
-      // --- RECORD ISSUE VIEW HERE ---
-      if (article && article.id && article.status === 'published') {
-        AVD.recordView(article.id);
-      }
-
-      if (article.pdfUrl) {
-        return (article.pdfPages && article.pdfPages.length ? openPageImages(article.pdfPages)
-          : (window.innerWidth < 880 ? Promise.reject(new Error('No page pictures for this issue yet.')) : openPdfBook(article.pdfUrl))).catch(function (err) {
-          console.error('PDF book failed:', err);
-          if (book) { book.destroy(); book = null; }
-          pdfDoc = null;
-          showPdf(article.pdfUrl);
-        });
-      }
-
-      setBackLink();
-      wire();
-      build(0, null);
-      note.textContent = 'Opening the book…';
-      setTimeout(function () {
-        if (!book || book.state !== 0) return;
-        book.goTo(1, true);
-        note.textContent = book.spread
-          ? 'Click a page, press ← →, or swipe to turn the pages.'
-          : 'Tap the page edges or swipe to turn the pages.';
-      }, reduced ? 0 : 1100);
+      // Readers of a published issue give their name and email once; each reader counts once per issue.
+      var published = article.status === 'published';
+      return (published ? readerGate() : Promise.resolve(null)).then(function (reader) {
+        if (reader && article.id) AVD.recordView(article.id, reader);
+        return openStory();
+      });
     }).catch(function (err) {
       if (err && err.status === 404) showError('Story not found', 'This story is not published, or the link is wrong.');
       else showError('Could not open the story', 'Check your connection and try again.');

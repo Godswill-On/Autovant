@@ -403,12 +403,24 @@
 
   /* ---------- view counter (public) ---------- */
 
-  // Fire and forget: a failed count must never stop a story from opening.
-  function recordView(articleId) {
-    if (!articleId) return;
+  // One count per reader per issue. The database keeps the rule (a reader is their email address);
+  // the list in this browser only saves a needless call. A failed count never stops a story opening.
+  var SEEN_KEY = 'holix_seen';
+
+  function seenList() {
+    try { return JSON.parse(localStorage.getItem(SEEN_KEY) || '[]'); } catch (e) { return []; }
+  }
+
+  function recordView(articleId, reader) {
+    if (!articleId || !reader || !reader.email) return;
+    var seen = seenList();
+    if (seen.indexOf(articleId) > -1) return;
     try {
-      Promise.resolve(sb.rpc('increment_article_views', { article_id: articleId }))
-        .then(function (res) { if (res && res.error) console.warn('View not counted:', res.error.message); })
+      Promise.resolve(sb.rpc('record_unique_view', { p_article: articleId, p_email: reader.email, p_name: reader.name }))
+        .then(function (res) {
+          if (res && res.error) { console.warn('View not counted:', res.error.message); return; }
+          try { seen.push(articleId); localStorage.setItem(SEEN_KEY, JSON.stringify(seen.slice(-300))); } catch (e) { /* ignore */ }
+        })
         .catch(function () {});
     } catch (e) { /* ignore */ }
   }

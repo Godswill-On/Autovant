@@ -115,3 +115,49 @@ alter table public.articles add column if not exists pdf_pages jsonb not null de
 update storage.buckets
   set allowed_mime_types = array['application/pdf', 'image/jpeg']
   where id = 'issues';
+
+-- 7. One view per reader per issue ---------------------------------------
+create table if not exists public.article_readers (
+  id         uuid primary key default gen_random_uuid(),
+  article_id uuid not null references public.articles(id) on delete cascade,
+  email      text not null,
+  name       text not null,
+  created_at timestamptz not null default now(),
+  unique (article_id, email)
+);
+
+alter table public.article_readers enable row level security;
+
+drop policy if exists "editor reads readers" on public.article_readers;
+create policy "editor reads readers" on public.article_readers
+  for select to authenticated using (true);
+
+create or replace function public.record_unique_view(p_article uuid, p_email text, p_name text)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  e text := lower(trim(coalesce(p_email, '')));
+  n text := left(trim(coalesce(p_name, '')), 80);
+  added int;
+begin
+  if n = '' or length(e) > 200 or e !~ '^[^\s@]+@[^\s@]+\.[^\s@]{2,}$' then return; end if;
+  if not exists (select 1 from public.articles where id = p_article and status = 'published') then return; end if;
+
+  insert into public.article_readers (article_id, email, name)
+  values (p_article, e, n)
+  on conflict (article_id, email) do nothing;
+
+  get diagnostics added = row_count;
+  if added > 0 then
+    update public.articles set views = views + 1 where id = p_article;
+  end if;
+end;
+$$;
+
+grant execute on function public.record_unique_view(uuid, text, text) to anon, authenticated;
+
+-- The old counter let anyone add views without limit; remove it.
+drop function if exists public.increment_article_views(uuid);

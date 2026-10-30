@@ -432,3 +432,13 @@ transform: translateZ(1px);
 .page--pdf.page--right::after { background: linear-gradient(90deg, rgba(0, 0, 0, 0.28) 0, rgba(0, 0, 0, 0.08) 4%, rgba(0, 0, 0, 0) 12%); }
 .page--pdf.page--left::after { background: linear-gradient(270deg, rgba(0, 0, 0, 0.28) 0, rgba(0, 0, 0, 0.08) 4%, rgba(0, 0, 0, 0) 12%); }
 .page--pdf > img:not([src]) { visibility: hidden; }
+
+/* ---------- reader sign-in ---------- */
+.reader-gate { display: grid; gap: 10px; width: min(420px, 100%); padding: 8px 4px; justify-items: stretch; }
+.reader-gate h1 { font-size: clamp(2rem, 6vw, 3rem); line-height: 1.05; margin-bottom: 4px; }
+.gate__p { color: var(--muted); font-size: 0.9375rem; margin-bottom: 8px; }
+.reader-gate label { font: 500 11px/1.4 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+.reader-gate input { width: 100%; padding: 14px 14px; background: var(--coal); color: var(--text); border: 1px solid var(--line); border-radius: 0; font: 400 16px/1.2 var(--body); }
+.gate__err { min-height: 1.4em; color: #ff9d86; font-size: 0.875rem; }
+.gate__btn { padding: 14px 20px; background: var(--champagne); color: var(--ink); border: 1px solid var(--champagne); border-radius: 0; font: 500 12px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
+.gate__btn:hover { background: transparent; color: var(--champagne); }
