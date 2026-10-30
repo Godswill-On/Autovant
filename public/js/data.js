@@ -15,7 +15,7 @@
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlqZmJ5d25seWdqbWViYmxxd3JoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE4MTI5OTYsImV4cCI6MjEwNzM4ODk5Nn0.73jEbITrBDxUCeIyMdm9FpCtNHLAE9bc_yzq8V6sutE';
   var BUCKET = 'photos';
 
-  var CATEGORIES = ['Exterior', 'Interior', 'Custom Builds', 'Designers & Brands', 'Concepts', 'Features'];
+  var CATEGORIES = ['Issues', 'Feature Fridays', 'Visual Art', 'Installations', 'Curated Spaces', 'Exhibitions'];
   var SOURCES = ['Official', 'Verified', 'Our view'];
   // Photos may come from our storage bucket or from the bundled sample images.
   var PDF_RE = new RegExp('^' + SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/storage/v1/object/public/issues/[A-Za-z0-9._-]{1,120}$');
@@ -122,6 +122,7 @@
       updatedAt: r.updated_at,
       publishedAt: r.published_at,
       pdfUrl: r.pdf_url || '',
+      pdfPages: Array.isArray(r.pdf_pages) ? r.pdf_pages : [],
       views: Number(r.views) || 0,
       blocks: Array.isArray(r.blocks) ? r.blocks : []
     };
@@ -235,10 +236,11 @@
 
     var fields = {
       title: title,
-      category: pick(body.category, CATEGORIES, 'Features'),
+      category: pick(body.category, CATEGORIES, 'Issues'),
       dek: str(body.dek, 400),
       cover: SRC_RE.test(body.cover || '') ? body.cover : '',
       pdf_url: PDF_RE.test(body.pdf_url || '') ? body.pdf_url : '',
+      pdf_pages: (Array.isArray(body.pdf_pages) ? body.pdf_pages : []).filter(function (u) { return PDF_RE.test(u || ''); }).slice(0, 400),
       featured: !!body.featured,
       status: status,
       blocks: cleanBlocks(body.blocks),
@@ -341,6 +343,64 @@
     });
   }
 
+
+  /*
+   * Turn an uploaded PDF into one small JPEG per page, done here in the editor (a computer has
+   * plenty of memory). Readers' phones then only download light pictures, never the PDF itself.
+   */
+  var PDFJS_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/';
+  var PAGE_WIDTH = 1000;
+
+  function loadPdfJs() {
+    if (window.pdfjsLib) return Promise.resolve(window.pdfjsLib);
+    return new Promise(function (resolve, reject) {
+      var el = document.createElement('script');
+      el.src = PDFJS_BASE + 'pdf.min.js';
+      el.onload = function () {
+        window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS_BASE + 'pdf.worker.min.js';
+        resolve(window.pdfjsLib);
+      };
+      el.onerror = function () { reject(fail('Could not load the PDF tools. Check your connection.', 0)); };
+      document.head.appendChild(el);
+    });
+  }
+
+  function uploadPdfPages(file, onProgress) {
+    var stamp = Date.now().toString(36) + randomName().slice(0, 6);
+    return authed(function () {
+      return loadPdfJs().then(function (lib) {
+        return file.arrayBuffer().then(function (buf) { return lib.getDocument({ data: buf }).promise; });
+      }).then(function (doc) {
+        var urls = [];
+        var n = doc.numPages;
+        function step(i) {
+          if (i > n) return Promise.resolve(urls);
+          if (onProgress) onProgress(i, n);
+          return doc.getPage(i).then(function (pg) {
+            var vp1 = pg.getViewport({ scale: 1 });
+            var vp = pg.getViewport({ scale: PAGE_WIDTH / vp1.width });
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.floor(vp.width);
+            canvas.height = Math.floor(vp.height);
+            return pg.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise.then(function () {
+              return new Promise(function (resolve) { canvas.toBlob(resolve, 'image/jpeg', 0.82); });
+            }).then(function (blob) {
+              canvas.width = canvas.height = 0;
+              if (!blob) throw fail('Could not draw page ' + i + '.', 500);
+              var name = stamp + '-p' + ('00' + i).slice(-3) + '.jpg';
+              return sb.storage.from(PDF_BUCKET).upload(name, blob, { cacheControl: '31536000', contentType: 'image/jpeg', upsert: false })
+                .then(function (res) {
+                  if (res.error) throw explain(res.error, 'Could not upload page ' + i + '.');
+                  urls.push(sb.storage.from(PDF_BUCKET).getPublicUrl(name).data.publicUrl);
+                });
+            });
+          }).then(function () { return step(i + 1); });
+        }
+        return step(1);
+      });
+    });
+  }
+
   /* ---------- view counter (public) ---------- */
 
   // Fire and forget: a failed count must never stop a story from opening.
@@ -378,6 +438,7 @@
     adminDelete: adminDelete,
     upload: upload,
     subscribersCsv: subscribersCsv,
-    recordView: recordView
+    recordView: recordView,
+    uploadPdfPages: uploadPdfPages
   };
 })();

@@ -569,6 +569,7 @@
   }
 
   function renderOne(i) {
+    if (pdfDoc.images) return Promise.resolve(pdfDoc.images[i]);
     return pdfDoc.getPage(i + 1).then(function (pg) {
       var vp1 = pg.getViewport({ scale: 1 });
       var vp = pg.getViewport({ scale: pdfTargetWidth() / vp1.width });
@@ -630,6 +631,37 @@
     pumpPdf();
   }
 
+  function startPdfBook() {
+    setBackLink();
+    wire();
+    build(0, null);
+    note.textContent = 'Opening the book…';
+    setTimeout(function () {
+      if (!book || book.state !== 0) return;
+      book.goTo(1, true);
+      note.textContent = book.spread
+        ? 'Click a page, press ← →, or swipe to turn the pages.'
+        : 'Tap the page edges or swipe to turn the pages.';
+    }, reduced ? 0 : 1100);
+    pdfSync();
+  }
+
+  // Preferred: the page pictures made when the PDF was uploaded. Light on every device.
+  function openPageImages(urls) {
+    note.textContent = 'Loading the magazine…';
+    return new Promise(function (resolve, reject) {
+      var im = new Image();
+      im.onload = function () { resolve(im); };
+      im.onerror = function () { reject(new Error('First page would not load.')); };
+      im.src = urls[0];
+    }).then(function (im) {
+      PAGE_RATIO = im.naturalWidth / im.naturalHeight;
+      pdfDoc = { numPages: urls.length, images: urls };
+      startPdfBook();
+    });
+  }
+
+  // Older issues with no page pictures: read the PDF itself (heavy, may fail on phones).
   function openPdfBook(url) {
     note.textContent = 'Loading the magazine…';
     return loadScript(PDFJS_BASE + 'pdf.min.js').then(function () {
@@ -640,19 +672,8 @@
       return doc.getPage(1);
     }).then(function (pg) {
       var vp = pg.getViewport({ scale: 1 });
-      PAGE_RATIO = vp.width / vp.height; // pages take the PDF's own shape
-      setBackLink();
-      wire();
-      build(0, null);
-      note.textContent = 'Opening the book…';
-      setTimeout(function () {
-        if (!book || book.state !== 0) return;
-        book.goTo(1, true);
-        note.textContent = book.spread
-          ? 'Click a page, press ← →, or swipe to turn the pages.'
-          : 'Tap the page edges or swipe to turn the pages.';
-      }, reduced ? 0 : 1100);
-      pdfSync();
+      PAGE_RATIO = vp.width / vp.height;
+      startPdfBook();
     });
   }
 
@@ -702,7 +723,7 @@
       }
 
       if (article.pdfUrl) {
-        return openPdfBook(article.pdfUrl).catch(function (err) {
+        return (article.pdfPages && article.pdfPages.length ? openPageImages(article.pdfPages) : openPdfBook(article.pdfUrl)).catch(function (err) {
           console.error('PDF book failed:', err);
           if (book) { book.destroy(); book = null; }
           pdfDoc = null;

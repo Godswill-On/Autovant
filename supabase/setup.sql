@@ -108,3 +108,10 @@ as $$
 $$;
 
 grant execute on function public.increment_article_views(uuid) to anon, authenticated;
+
+-- 6. PDF page pictures (so phones never have to open the PDF itself) -------
+alter table public.articles add column if not exists pdf_pages jsonb not null default '[]'::jsonb;
+
+update storage.buckets
+  set allowed_mime_types = array['application/pdf', 'image/jpeg']
+  where id = 'issues';

@@ -143,12 +143,20 @@
     var sizeMb = (file.size / (1024 * 1024)).toFixed(1);
     status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
 
+    var pdfLink;
     uploadFile(file)
       .then(function (url) {
-        onChange(url);
-        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB)';
-        pick.textContent = 'Replace PDF Issue';
-        toast('PDF magazine uploaded successfully!');
+        pdfLink = url;
+        status.textContent = 'Preparing pages…';
+        return guard(AVD.uploadPdfPages(file, function (i, n) {
+          status.textContent = 'Preparing pages for phones… ' + i + ' of ' + n;
+        }));
+      })
+      .then(function (pages) {
+        onChange(pdfLink, pages);
+        status.textContent = '✓ PDF attached: ' + file.name + ' (' + sizeMb + ' MB, ' + pages.length + ' pages)';
+        pick.firstChild.textContent = 'Replace PDF Issue';
+        toast('PDF magazine uploaded. Remember to Save.');
       })
       .catch(function (e) {
         status.textContent = 'Upload failed: ' + (e.message || 'Server error');
@@ -318,6 +326,7 @@
       dek: current.dek,
       cover: current.cover,
       pdf_url: current.pdf_url || '',
+      pdf_pages: current.pdf_pages || [],
       featured: !!current.featured,
       status: current.status,
       blocks: current.blocks
@@ -484,7 +493,7 @@
             h('label', { class: 'check' }, featured, h('span', { text: 'Make this the cover story on the homepage' }))),
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'PDF Magazine (Optional)' }),
-            pdfUploader(current.pdf_url, function (url) { current.pdf_url = url; markDirty(); }),
+            pdfUploader(current.pdf_url, function (url, pages) { current.pdf_url = url; current.pdf_pages = pages || []; markDirty(); }),
             h('p', { class: 'hint', text: 'Upload a complete pre-made PDF issue instead of writing manual blocks.' })),
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'Cover photo' }),
@@ -504,7 +513,7 @@
 
   function showEditor(id) {
     if (!id) {
-      current = { title: '', category: 'Features', dek: '', cover: '', pdf_url: '', featured: false, status: 'draft', blocks: [] };
+      current = { title: '', category: 'Issues', dek: '', cover: '', pdf_url: '', pdf_pages: [], featured: false, status: 'draft', blocks: [] };
       dirty = false;
       drawEditor();
       return;
@@ -514,6 +523,7 @@
     guard(AVD.adminGet(id)).then(function (a) {
       current = a;
       current.pdf_url = a.pdfUrl || '';
+      current.pdf_pages = a.pdfPages || [];
       dirty = false;
       drawEditor();
     }).catch(function (e) {
