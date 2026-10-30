@@ -133,3 +133,8 @@ h1 em { font-style: italic; color: var(--champagne); }
 }
 .field button:hover { background: var(--champagne); color: var(--ink); }
 .msg { min-height: 1.6em; margin-top: 12px; font-size: 0.9375rem; color: var(--muted); }
+
+/* Featured Artist & Artwork */
+.spotlight { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; }
+.spotlight .photo { aspect-ratio: 4 / 5; }
+@media (max-width: 640px) { .spotlight { grid-template-columns: 1fr; } }

@@ -18,6 +18,7 @@
     }
     cover.href = '/read/' + hero.slug;
     cover.setAttribute('data-book', '');
+    link.hidden = false;
     link.href = '/read/' + hero.slug;
     link.setAttribute('data-book', '');
     link.textContent = 'Open the cover story';
@@ -27,14 +28,6 @@
       cover.classList.add('has-img');
       cover.insertBefore(h('img', { src: hero.cover, alt: '' }), cover.firstChild);
     }
-  }
-
-  function renderBuilds(rest) {
-    var picks = rest.slice(0, 3);
-    if (!picks.length) return;
-    var box = document.getElementById('builds-list');
-    picks.forEach(function (a, i) { box.append(AV.card(a, i === 0)); });
-    document.getElementById('builds').hidden = false;
   }
 
   function renderDiptych(list) {
@@ -55,27 +48,22 @@
     }
   }
 
-  function renderIndex(list) {
-    var box = document.getElementById('index');
-    ['Art Work', 'Artists', 'Features'].forEach(function (name) {
-      var c = AV.catByName(name);
-      var n = list.filter(function (a) { return a.category === name; }).length;
-      var latest = latestIn(list, name);
-      box.append(h('a', { class: 'tile', href: '/section/' + c.slug },
-        h('div', { class: 'photo ' + c.tx }, latest && latest.cover ? h('img', { src: latest.cover, alt: '', loading: 'lazy' }) : null),
-        h('h3', { text: name }),
-        h('p', { text: c.blurb }),
-        h('span', { class: 'meta', text: n === 1 ? '1 story' : n + ' stories' })
-      ));
+  // Featured Artist & Artwork: two pictures the editor sets from the Homepage page of the editor.
+  function renderSpotlight(f) {
+    var items = [
+      { img: f.artist.image, title: f.artist.name, text: f.artist.caption, meta: 'Featured artist' },
+      { img: f.artwork.image, title: f.artwork.title, text: f.artwork.caption, meta: 'Featured artwork' }
+    ].filter(function (it) { return it.img || it.title; });
+    if (!items.length) return;
+    var box = document.getElementById('spotlight-list');
+    items.forEach(function (it) {
+      box.append(h('div', { class: 'tile' },
+        h('div', { class: 'photo tx-paint' }, it.img ? h('img', { src: it.img, alt: it.title || it.meta, loading: 'lazy' }) : null),
+        it.title ? h('h3', { text: it.title }) : null,
+        it.text ? h('p', { text: it.text }) : null,
+        h('span', { class: 'meta', text: it.meta })));
     });
-  }
-
-  function renderLatest(rest) {
-    var more = rest.slice(3, 11);
-    if (!more.length) return;
-    var box = document.getElementById('latest-list');
-    more.forEach(function (a) { box.append(AV.row(a)); });
-    document.getElementById('latest').hidden = false;
+    document.getElementById('spotlight').hidden = false;
   }
 
   function wireForm() {
@@ -98,13 +86,11 @@
   }
 
   AVD.listPublished().catch(function () { return []; }).then(function (list) {
-    var hero = list.filter(function (a) { return a.featured; })[0] || list[0] || null;
-    var rest = list.filter(function (a) { return a !== hero; });
+    // Only the story marked as the cover story shows on the homepage.
+    var hero = list.filter(function (a) { return a.featured; })[0] || null;
     renderCover(hero);
-    renderBuilds(rest);
     renderDiptych(list);
-    renderIndex(list);
-    renderLatest(rest);
   });
+  AVD.getFeatured().then(renderSpotlight).catch(function () {});
   wireForm();
 })();

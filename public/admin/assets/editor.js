@@ -557,12 +557,58 @@
     });
   }
 
+  /* ---------- homepage: Featured Artist & Artwork ---------- */
+
+  function showHome() {
+    current = null;
+    app.textContent = '';
+    app.append(h('p', { class: 'muted', text: 'Loading…' }));
+    guard(AVD.getFeatured()).then(function (data) {
+      dirty = false;
+      var saveBtn = h('button', { type: 'button', class: 'btn btn--solid', text: 'Save' });
+      saveBtn.addEventListener('click', function () {
+        saveBtn.disabled = true;
+        guard(AVD.saveFeatured(data)).then(function () {
+          dirty = false;
+          toast('Saved. The homepage is updated.');
+        }).catch(function (e) { toast(e.message, 'error'); }).then(function () { saveBtn.disabled = false; });
+      });
+
+      function card(title, group, nameKey, nameLabel) {
+        var obj = data[group];
+        var name = bindInput(h('input', { type: 'text', maxlength: '100' }), obj, nameKey);
+        var cap = autoGrow(bindInput(h('textarea', { rows: '3', maxlength: '300' }), obj, 'caption'));
+        return h('section', { class: 'side-card' },
+          h('span', { class: 'tag', text: title }),
+          uploader(obj.image, function (url) { obj.image = url; markDirty(); }, 'Choose picture'),
+          fld(nameLabel, name),
+          fld('Short line (optional)', cap));
+      }
+
+      app.textContent = '';
+      app.append(
+        h('div', { class: 'page-head' },
+          h('div', { class: 'page-head__l' },
+            h('a', { class: 'tag', href: '#/', text: '← All features' }),
+            h('h1', { text: 'Featured Artist & Artwork' }),
+            h('p', { class: 'muted', text: 'The two pictures shown in the Featured Artist & Artwork section of the homepage.' })),
+          h('div', { class: 'page-head__r' }, saveBtn)),
+        h('div', { style: 'display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));' },
+          card('Featured artist', 'artist', 'name', 'Artist name'),
+          card('Featured artwork', 'artwork', 'title', 'Artwork title')));
+    }).catch(function (e) {
+      app.textContent = '';
+      app.append(h('p', { class: 'form-msg', text: e.message }), h('a', { class: 'btn', href: '#/', text: 'Back to all features' }));
+    });
+  }
+
   /* ---------- routing ---------- */
 
   function route() {
     var m = location.hash.match(/^#\/edit\/([\w-]+)$/);
     if (m) showEditor(m[1]);
     else if (location.hash === '#/new') showEditor(null);
+    else if (location.hash === '#/home') showHome();
     else showList();
     window.scrollTo(0, 0);
   }

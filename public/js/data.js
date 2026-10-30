@@ -228,6 +228,13 @@
     });
   }
 
+  // Only one story is the homepage cover story at a time.
+  function unfeatureOthers(saved) {
+    if (!saved.featured) return saved;
+    return sb.from('articles').update({ featured: false }).eq('featured', true).neq('id', saved.id)
+      .then(function () { return saved; }, function () { return saved; });
+  }
+
   function adminSave(id, body) {
     var title = str(body.title, 200);
     if (!title) return Promise.reject(fail('Add a title first.', 400));
@@ -257,7 +264,7 @@
         }).then(function (res) {
           if (res.error) throw explain(res.error);
           if (!res.data) throw fail('Could not save. Your session may have ended: sign in again.', 401);
-          return fromRow(res.data);
+          return unfeatureOthers(fromRow(res.data));
         });
       }
       return uniqueSlug(title).then(function (slug) {
@@ -266,7 +273,7 @@
         return sb.from('articles').insert(fields).select('*').single();
       }).then(function (res) {
         if (res.error) throw explain(res.error);
-        return fromRow(res.data);
+        return unfeatureOthers(fromRow(res.data));
       });
     });
   }
@@ -425,6 +432,37 @@
     } catch (e) { /* ignore */ }
   }
 
+
+  /* ---------- homepage: Featured Artist & Artwork ---------- */
+
+  function cleanFeatured(v) {
+    v = v && typeof v === 'object' ? v : {};
+    var a = v.artist || {};
+    var w = v.artwork || {};
+    return {
+      artist: { image: SRC_RE.test(a.image || '') ? a.image : '', name: str(a.name, 100), caption: str(a.caption, 300) },
+      artwork: { image: SRC_RE.test(w.image || '') ? w.image : '', title: str(w.title, 100), caption: str(w.caption, 300) }
+    };
+  }
+
+  function getFeatured() {
+    return sb.from('site_settings').select('value').eq('key', 'featured').maybeSingle().then(function (res) {
+      if (res.error) throw explain(res.error);
+      return cleanFeatured(res.data && res.data.value);
+    });
+  }
+
+  function saveFeatured(value) {
+    return authed(function () {
+      return sb.from('site_settings')
+        .upsert({ key: 'featured', value: cleanFeatured(value), updated_at: new Date().toISOString() })
+        .then(function (res) {
+          if (res.error) throw explain(res.error);
+          return { ok: true };
+        });
+    });
+  }
+
   /* ---------- editor: subscribers ---------- */
 
   function subscribersCsv() {
@@ -451,6 +489,8 @@
     upload: upload,
     subscribersCsv: subscribersCsv,
     recordView: recordView,
+    getFeatured: getFeatured,
+    saveFeatured: saveFeatured,
     uploadPdfPages: uploadPdfPages
   };
 })();
