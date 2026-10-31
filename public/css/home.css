@@ -138,3 +138,27 @@ h1 em { font-style: italic; color: var(--champagne); }
 .spotlight { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: 880px; }
 .spotlight .photo { aspect-ratio: 4 / 5; }
 @media (max-width: 640px) { .spotlight { grid-template-columns: 1fr; } }
+
+/* Section cards on the homepage: Issues and Feature Fridays */
+.dip-card {
+  position: relative; isolation: isolate; overflow: hidden;
+  display: grid; gap: 10px; align-content: end;
+  min-height: clamp(300px, 34vw, 420px);
+  padding: clamp(22px, 3vw, 36px);
+  text-decoration: none; color: var(--text);
+  border: 1px solid var(--line);
+  background: var(--coal);
+}
+.dip-card::before {
+  content: ""; position: absolute; inset: 0; z-index: -2;
+  background: var(--art, none) center / cover no-repeat;
+  transition: transform 0.8s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.dip-card::after {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(to top, rgba(8, 6, 40, 0.88), rgba(8, 6, 40, 0.15) 70%);
+}
+.dip-card:hover::before { transform: scale(1.04); }
+.dip-card h3 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; }
+.dip-card p { color: var(--muted); max-width: 36ch; }
+.dip-card .link { justify-self: start; }
