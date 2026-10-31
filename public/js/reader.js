@@ -298,8 +298,8 @@
   function colophonPage(index) {
     return h('section', { class: 'page page--colophon' },
       h('div', { class: 'page__body page__body--col' },
-        h('span', { class: 'col-mark', text: 'A' }),
-        h('p', { class: 'col-p', text: 'Every spec in AUTOVANT is labelled Official, Verified or Our view, so you always know where a fact came from.' })),
+        h('span', { class: 'col-mark', text: 'H' }),
+        h('p', { class: 'col-p', text: 'HOLIX celebrates contemporary art and the people who make it. Every work and fact we publish is labelled Official, Verified or Our view, so you always know where it came from.' })),
       foot(index));
   }
 
@@ -322,8 +322,8 @@
     return h('section', { class: 'page page--back tx-leather' },
       h('div', { class: 'back__shade' }),
       h('div', { class: 'back__inner' },
-        h('span', { class: 'cover__mark', text: 'Autovant' }),
-        h('p', { class: 'back__line', text: 'Beyond the factory.' })));
+        h('span', { class: 'cover__mark', text: 'HOLIX' }),
+        h('p', { class: 'back__line', text: 'Beyond the Creative.' })));
   }
 
   // Cover, title page, content, optional filler, end page, back cover.
@@ -509,7 +509,7 @@
     stage.append(h('div', { class: 'reader-error' },
       h('h1', { text: title }),
       h('p', { text: text }),
-      h('a', { class: 'link', href: '/', text: 'Back to AUTOVANT' })));
+      h('a', { class: 'link', href: '/', text: 'Back to HOLIX' })));
   }
 
   /* ---------- PDF issues: each PDF page becomes a book page ---------- */
