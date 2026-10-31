@@ -7,7 +7,6 @@
     { name: 'Issues', slug: 'issues', tx: 'tx-paint', blurb: 'Full digital magazine editions and structured publications.' },
     { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-grid', blurb: 'Weekly featured editorial spotlights and deep dives.' },
     { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
-    { name: 'Installations', slug: 'installations', tx: 'tx-metal', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
     { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
     { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }
   ];
