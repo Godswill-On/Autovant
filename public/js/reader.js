@@ -1,5 +1,5 @@
 /*
- * AUTOVANT reader: loads one story and shows it as a book.
+ * HOLIX reader: loads one story and shows it as a book.
  *
  * 1. Fetch the story (and a few related ones for the last page).
  * 2. Measure the text at the real page size and split it into pages (paginate).
@@ -241,7 +241,7 @@
 
   function foot(index) {
     return h('div', { class: 'page__foot' },
-      h('span', { text: 'Autovant · ' + article.category }),
+      h('span', { text: 'HOLIX · ' + article.category }),
       h('span', { class: 'page__num', text: String(index) }));
   }
 
@@ -252,12 +252,12 @@
     page.append(
       h('div', { class: 'cover__shade' }),
       h('div', { class: 'cover__top' },
-        h('span', { class: 'cover__mark', text: 'Autovant' }),
+        h('span', { class: 'cover__mark', text: 'HOLIX' }),
         h('span', { class: 'tag', text: fmtDate(article.publishedAt || article.updatedAt) })),
       h('div', { class: 'cover__bottom' },
         h('span', { class: 'tag', text: article.category }),
         h('h1', { class: 'cover__title', text: article.title }),
-        h('p', { class: 'cover__line', text: 'Beyond the factory' }))
+        h('p', { class: 'cover__line', text: 'Beyond the canvas' }))
     );
     return page;
   }
@@ -298,7 +298,7 @@
   function colophonPage(index) {
     return h('section', { class: 'page page--colophon' },
       h('div', { class: 'page__body page__body--col' },
-        h('span', { class: 'col-mark', text: 'H' }),
+        h('span', { class: 'col-mark', text: 'A' }),
         h('p', { class: 'col-p', text: 'HOLIX celebrates contemporary art and the people who make it. Every work and fact we publish is labelled Official, Verified or Our view, so you always know where it came from.' })),
       foot(index));
   }
@@ -323,7 +323,7 @@
       h('div', { class: 'back__shade' }),
       h('div', { class: 'back__inner' },
         h('span', { class: 'cover__mark', text: 'HOLIX' }),
-        h('p', { class: 'back__line', text: 'Beyond the Creative.' })));
+        h('p', { class: 'back__line', text: 'Beyond the canvas.' })));
   }
 
   // Cover, title page, content, optional filler, end page, back cover.

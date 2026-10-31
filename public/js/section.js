@@ -17,7 +17,7 @@
     return;
   }
 
-  document.title = cat.name + ' | AUTOVANT';
+  document.title = cat.name + ' | HOLIX';
   title.textContent = cat.name;
   blurb.textContent = cat.blurb;
 
