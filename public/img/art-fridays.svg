@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#17114f"/>
+      <stop offset="1" stop-color="#090636"/>
+    </linearGradient>
+    <linearGradient id="beam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#eaa029" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#eaa029" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f3c266"/>
+      <stop offset="1" stop-color="#a86d12"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="700" fill="url(#wall)"/>
+  <polygon points="250,0 470,0 560,560 160,560" fill="url(#beam)"/>
+  <polygon points="620,0 880,0 980,560 520,560" fill="url(#beam)"/>
+  <polygon points="950,0 1100,0 1160,520 900,520" fill="url(#beam)" opacity="0.7"/>
+  <rect x="0" y="600" width="1200" height="100" fill="#05031f"/>
+  <rect x="0" y="596" width="1200" height="4" fill="#eaa029" opacity="0.5"/>
+
+  <!-- large canvas -->
+  <rect x="190" y="150" width="300" height="380" fill="url(#frame)"/>
+  <rect x="210" y="170" width="260" height="340" fill="#e0006d"/>
+  <circle cx="340" cy="300" r="90" fill="#fffff3" opacity="0.9"/>
+  <path d="M210 510 L 470 330 L 470 510 Z" fill="#7d328d"/>
+  <circle cx="400" cy="230" r="26" fill="#eaa029"/>
+
+  <!-- wide canvas -->
+  <rect x="580" y="210" width="360" height="250" fill="url(#frame)"/>
+  <rect x="598" y="228" width="324" height="214" fill="#1b1464"/>
+  <path d="M598 380 C 680 290, 760 450, 850 330 S 900 360, 922 330 L 922 442 L 598 442 Z" fill="#ef7b00"/>
+  <path d="M598 410 C 700 360, 780 460, 922 390 L 922 442 L 598 442 Z" fill="#e0006d" opacity="0.85"/>
+  <circle cx="860" cy="280" r="22" fill="#fffff3"/>
+
+  <!-- small canvas -->
+  <rect x="1000" y="260" width="130" height="170" fill="url(#frame)"/>
+  <rect x="1014" y="274" width="102" height="142" fill="#7d328d"/>
+  <rect x="1030" y="296" width="70" height="70" fill="#eaa029"/>
+  <rect x="1030" y="376" width="70" height="26" fill="#fffff3" opacity="0.85"/>
+
+  <!-- plinth with sculpture -->
+  <rect x="70" y="470" width="90" height="130" fill="#241b7a"/>
+  <rect x="62" y="462" width="106" height="12" fill="#32258c"/>
+  <circle cx="115" cy="425" r="34" fill="none" stroke="#eaa029" stroke-width="10"/>
+  <circle cx="115" cy="425" r="10" fill="#e0006d"/>
+</svg>

@@ -439,9 +439,14 @@
     v = v && typeof v === 'object' ? v : {};
     var a = v.artist || {};
     var w = v.artwork || {};
+    var sec = v.sections || {};
     return {
       artist: { image: SRC_RE.test(a.image || '') ? a.image : '', name: str(a.name, 100), caption: str(a.caption, 300) },
-      artwork: { image: SRC_RE.test(w.image || '') ? w.image : '', title: str(w.title, 100), caption: str(w.caption, 300) }
+      artwork: { image: SRC_RE.test(w.image || '') ? w.image : '', title: str(w.title, 100), caption: str(w.caption, 300) },
+      sections: {
+        issues: SRC_RE.test(sec.issues || '') ? sec.issues : '',
+        fridays: SRC_RE.test(sec.fridays || '') ? sec.fridays : ''
+      }
     };
   }
 

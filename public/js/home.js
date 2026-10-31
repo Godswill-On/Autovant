@@ -30,22 +30,31 @@
     }
   }
 
-  function renderDiptych(list) {
-    var DIPTYCH_CATS = ['Issues', 'Feature Fridays'];
-    var diptychBox = document.getElementById('diptych');
-    if (diptychBox) {
-      diptychBox.textContent = '';
-      DIPTYCH_CATS.forEach(function (catName) {
-        var c = AV.catByName(catName);
-        var card = AV.h('a', { class: 'dip-card ' + c.tx, href: '/section/' + c.slug },
-          AV.h('span', { class: 'tag', text: 'Section' }),
-          AV.h('h3', { text: c.name }),
-          AV.h('p', { text: c.blurb }),
-          AV.h('span', { class: 'link', text: 'See all ' + c.name + ' stories' })
-        );
-        diptychBox.append(card);
-      });
-    }
+  // The two section cards. They start with the built-in art pictures; the editor can replace them.
+  var CARD_ART = { 'issues': '/img/art-issues.svg', 'feature-fridays': '/img/art-fridays.svg' };
+
+  function renderDiptych() {
+    var box = document.getElementById('diptych');
+    if (!box) return;
+    box.textContent = '';
+    ['Issues', 'Feature Fridays'].forEach(function (catName) {
+      var c = AV.catByName(catName);
+      var card = h('a', { class: 'dip-card', href: '/section/' + c.slug, 'data-slug': c.slug },
+        h('span', { class: 'tag', text: 'Section' }),
+        h('h3', { text: c.name }),
+        h('p', { text: c.blurb }),
+        h('span', { class: 'link', text: 'See all ' + c.name + ' stories' }));
+      card.style.setProperty('--art', 'url("' + CARD_ART[c.slug] + '")');
+      box.append(card);
+    });
+  }
+
+  function applyCardPictures(f) {
+    var pics = { 'issues': f.sections.issues, 'feature-fridays': f.sections.fridays };
+    Object.keys(pics).forEach(function (slug) {
+      var card = document.querySelector('.dip-card[data-slug="' + slug + '"]');
+      if (card && pics[slug]) card.style.setProperty('--art', 'url("' + pics[slug] + '")');
+    });
   }
 
   // Featured Artist & Artwork: two pictures the editor sets from the Homepage page of the editor.
@@ -89,8 +98,8 @@
     // Only the story marked as the cover story shows on the homepage.
     var hero = list.filter(function (a) { return a.featured; })[0] || null;
     renderCover(hero);
-    renderDiptych(list);
   });
-  AVD.getFeatured().then(renderSpotlight).catch(function () {});
+  renderDiptych();
+  AVD.getFeatured().then(function (f) { applyCardPictures(f); renderSpotlight(f); }).catch(function () {});
   wireForm();
 })();

@@ -590,12 +590,20 @@
         h('div', { class: 'page-head' },
           h('div', { class: 'page-head__l' },
             h('a', { class: 'tag', href: '#/', text: '← All features' }),
-            h('h1', { text: 'Featured Artist & Artwork' }),
-            h('p', { class: 'muted', text: 'The two pictures shown in the Featured Artist & Artwork section of the homepage.' })),
+            h('h1', { text: 'Homepage pictures' }),
+            h('p', { class: 'muted', text: 'The Featured Artist & Artwork section, and the pictures behind the Issues and Feature Fridays cards.' })),
           h('div', { class: 'page-head__r' }, saveBtn)),
         h('div', { style: 'display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));' },
           card('Featured artist', 'artist', 'name', 'Artist name'),
-          card('Featured artwork', 'artwork', 'title', 'Artwork title')));
+          card('Featured artwork', 'artwork', 'title', 'Artwork title'),
+          h('section', { class: 'side-card' },
+            h('span', { class: 'tag', text: 'Issues card picture' }),
+            h('p', { class: 'hint', text: 'Shown behind the Issues card on the homepage. Leave empty to use the built-in art picture.' }),
+            uploader(data.sections.issues, function (url) { data.sections.issues = url; markDirty(); }, 'Choose picture')),
+          h('section', { class: 'side-card' },
+            h('span', { class: 'tag', text: 'Feature Fridays card picture' }),
+            h('p', { class: 'hint', text: 'Shown behind the Feature Fridays card on the homepage. Leave empty to use the built-in art picture.' }),
+            uploader(data.sections.fridays, function (url) { data.sections.fridays = url; markDirty(); }, 'Choose picture'))));
     }).catch(function (e) {
       app.textContent = '';
       app.append(h('p', { class: 'form-msg', text: e.message }), h('a', { class: 'btn', href: '#/', text: 'Back to all features' }));
