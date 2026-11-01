@@ -129,7 +129,7 @@
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
           h('a', { class: 'wordmark', href: '/', text: 'HOLIX' }),
-          h('p', { class: 'tagline', text: 'Beyond the canvas.' })
+          h('p', { class: 'tagline', text: 'For the Love of Art and Creativity.' })
         ),
         h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), h('div', { class: 'socials' }, social, tiktok)),
         h('div', null,
