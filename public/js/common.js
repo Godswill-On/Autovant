@@ -100,14 +100,24 @@
     }
     var footer = document.getElementById('site-footer');
     if (footer) {
-      var list = h('ul');
-      CATS.forEach(function (c) { list.append(h('li', null, h('a', { href: '/section/' + c.slug, text: c.name }))); });
+      var INSTAGRAM = 'https://www.instagram.com/holixmagazine?xtok=MWZwN2MyZnd3cnBweg==';
+      var icon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      icon.setAttribute('viewBox', '0 0 24 24');
+      icon.setAttribute('width', '20');
+      icon.setAttribute('height', '20');
+      icon.setAttribute('fill', 'none');
+      icon.setAttribute('stroke', 'currentColor');
+      icon.setAttribute('stroke-width', '1.7');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/>';
+      var social = h('a', { class: 'social', href: INSTAGRAM, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'HOLIX on Instagram' },
+        icon, h('span', { text: 'Instagram · @holixmagazine' }));
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
           h('a', { class: 'wordmark', href: '/', text: 'HOLIX' }),
           h('p', { class: 'tagline', text: 'Beyond the canvas.' })
         ),
-        h('div', null, h('span', { class: 'tag', text: 'Sections' }), list),
+        h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), social),
         h('div', null,
           h('span', { class: 'tag', text: 'Editorial' }),
           h('p', { text: 'Editorial independence comes first. Sponsored content is always labelled. © ' + new Date().getFullYear() + ' HOLIX.' })

@@ -371,7 +371,13 @@
       pageH = pageW / PAGE_RATIO;
     } else {
       pageW = Math.min(availW, 520);
-      pageH = Math.min(availH, pageW * 1.62);
+      if (pdfDoc) {
+        // A PDF page keeps its own shape, so there is no empty strip above or below it.
+        pageH = pageW / PAGE_RATIO;
+        if (pageH > availH) { pageH = availH; pageW = pageH * PAGE_RATIO; }
+      } else {
+        pageH = Math.min(availH, pageW * 1.62);
+      }
     }
     return {
       spread: spread,

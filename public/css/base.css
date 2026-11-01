@@ -177,3 +177,6 @@ footer { border-top: 1px solid var(--line); padding-block: 48px; }
 .foot a:hover { color: var(--text); }
 .foot p { color: var(--muted); font-size: 0.875rem; max-width: 44ch; }
 .foot .tag { display: block; margin-bottom: 12px; color: var(--muted); }
+
+.foot .social { display: inline-flex; align-items: center; gap: 12px; padding-block: 6px; }
+.foot .social svg { flex: none; }
