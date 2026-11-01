@@ -184,7 +184,7 @@ h1 em { font-style: italic; color: var(--champagne); }
 .cover.has-img .cap { position: static; z-index: 1; max-width: 46ch; gap: 14px; padding-bottom: 8px; }
 .cover-dek { color: var(--muted); font-size: 1.0625rem; line-height: 1.5; }
 
-/* Issues: show the whole cover picture inside the same box, never cropped */
+/* Every section: show the whole cover picture inside the same box, never cropped */
 .photo--whole { background: var(--coal); }
 .photo--whole > img { object-fit: contain; }
 .photo--whole::after { display: none; }
