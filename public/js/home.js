@@ -26,7 +26,12 @@
     document.getElementById('cover-title').textContent = hero.title;
     if (hero.cover) {
       cover.classList.add('has-img');
-      cover.insertBefore(h('img', { src: hero.cover, alt: '' }), cover.firstChild);
+      cover.insertBefore(h('img', { src: hero.cover, alt: hero.title }), cover.firstChild);
+      var cap = cover.querySelector('.cap');
+      if (cap) {
+        if (hero.dek) cap.append(h('span', { class: 'cover-dek', text: hero.dek }));
+        cap.append(h('span', { class: 'link', text: 'Open the cover story' }));
+      }
     }
   }
 

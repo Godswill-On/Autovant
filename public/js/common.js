@@ -55,7 +55,7 @@
 
   function photo(article, extra) {
     var c = catByName(article.category);
-    var d = h('div', { class: 'photo ' + c.tx + (extra ? ' ' + extra : '') });
+    var d = h('div', { class: 'photo ' + c.tx + (article.category === 'Issues' ? ' photo--whole' : '') + (extra ? ' ' + extra : '') });
     if (article.cover) d.append(h('img', { src: article.cover, alt: '', loading: 'lazy' }));
     return d;
   }

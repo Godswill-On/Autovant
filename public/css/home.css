@@ -162,3 +162,29 @@ h1 em { font-style: italic; color: var(--champagne); }
 .dip-card h3 { font-size: clamp(2rem, 4vw, 3rem); line-height: 1.05; }
 .dip-card p { color: var(--muted); max-width: 36ch; }
 .dip-card .link { justify-self: start; }
+
+/* Cover story on the homepage: a box that shows the whole cover picture */
+.cover.has-img {
+  aspect-ratio: auto; min-height: 0;
+  display: grid; gap: clamp(20px, 3vw, 44px); align-items: end;
+  grid-template-columns: minmax(0, 1fr);
+  padding: clamp(16px, 2.5vw, 32px);
+  border: 1px solid var(--line);
+  background: var(--coal);
+}
+@media (min-width: 760px) { .cover.has-img { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); } }
+.cover.has-img::after { display: none; }
+.cover.has-img > img {
+  position: static; inset: auto; z-index: 1;
+  width: 100%; height: auto; max-height: min(78vh, 760px);
+  object-fit: contain; justify-self: center;
+  box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.75);
+}
+.cover.has-img .cap { position: static; z-index: 1; max-width: 46ch; gap: 14px; padding-bottom: 8px; }
+.cover-dek { color: var(--muted); font-size: 1.0625rem; line-height: 1.5; }
+
+/* Issues: show the whole cover picture inside the same box, never cropped */
+.photo--whole { background: var(--coal); }
+.photo--whole > img { object-fit: contain; }
+.photo--whole::after { display: none; }
+a:hover > .photo--whole > img { transform: none; }
