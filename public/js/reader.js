@@ -323,7 +323,7 @@
       h('div', { class: 'back__shade' }),
       h('div', { class: 'back__inner' },
         h('span', { class: 'cover__mark', text: 'HOLIX' }),
-        h('p', { class: 'back__line', text: 'Beyond the canvas.' })));
+        h('p', { class: 'back__line', text: 'For the Love of Art and Creativity.' })));
   }
 
   // Cover, title page, content, optional filler, end page, back cover.
