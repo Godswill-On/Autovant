@@ -112,12 +112,26 @@
       icon.innerHTML = '<rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none"/>';
       var social = h('a', { class: 'social', href: INSTAGRAM, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'HOLIX on Instagram' },
         icon, h('span', { text: 'Instagram · @holixmagazine' }));
+      var TIKTOK = 'https://www.tiktok.com/@holixmagazine?_r=1&_t=ZS-9B3DB3MQXbU';
+      var tkIcon = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+      tkIcon.setAttribute('viewBox', '0 0 24 24');
+      tkIcon.setAttribute('width', '20');
+      tkIcon.setAttribute('height', '20');
+      tkIcon.setAttribute('fill', 'none');
+      tkIcon.setAttribute('stroke', 'currentColor');
+      tkIcon.setAttribute('stroke-width', '1.8');
+      tkIcon.setAttribute('stroke-linecap', 'round');
+      tkIcon.setAttribute('stroke-linejoin', 'round');
+      tkIcon.setAttribute('aria-hidden', 'true');
+      tkIcon.innerHTML = '<path d="M14 3v11.2a3.7 3.7 0 1 1-3.7-3.7"/><path d="M14 3c.3 2.6 2 4.4 4.6 4.6"/>';
+      var tiktok = h('a', { class: 'social', href: TIKTOK, target: '_blank', rel: 'noopener noreferrer', 'aria-label': 'HOLIX on TikTok' },
+        tkIcon, h('span', { text: 'TikTok · @holixmagazine' }));
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
           h('a', { class: 'wordmark', href: '/', text: 'HOLIX' }),
           h('p', { class: 'tagline', text: 'Beyond the canvas.' })
         ),
-        h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), social),
+        h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), h('div', { class: 'socials' }, social, tiktok)),
         h('div', null,
           h('span', { class: 'tag', text: 'Editorial' }),
           h('p', { text: 'Editorial independence comes first. Sponsored content is always labelled. © ' + new Date().getFullYear() + ' HOLIX.' })

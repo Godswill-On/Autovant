@@ -180,3 +180,4 @@ footer { border-top: 1px solid var(--line); padding-block: 48px; }
 
 .foot .social { display: inline-flex; align-items: center; gap: 12px; padding-block: 6px; }
 .foot .social svg { flex: none; }
+.foot .socials { display: grid; gap: 4px; }
