@@ -164,6 +164,7 @@ h1 em { font-style: italic; color: var(--champagne); }
 .dip-card .link { justify-self: start; }
 
 /* Cover story on the homepage: a box that shows the whole cover picture */
+.cover, .cover:hover, .cover * { text-decoration: none; }
 .cover.has-img {
   aspect-ratio: auto; min-height: 0;
   display: grid; gap: clamp(20px, 3vw, 44px); align-items: end;
