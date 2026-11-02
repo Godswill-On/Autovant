@@ -2,7 +2,7 @@
 
 :root {
   /* New Holix Color Palette */
-  --bg-dark: #0b0838;            /* Deep Navy Background */
+  --bg-dark: #0e0a4c;            /* Deep Navy Background */
   --accent-pink: #e0006d;        /* Vivid Magenta Accent */
   --accent-purple: #7d328d;      /* Deep Purple Accent */
   --accent-orange: #ef7b00;      /* Warm Orange */
@@ -10,10 +10,10 @@
   --text-light: #fffff3;         /* Off-White Text */
 
   /* Mapped Theme Variables */
-  --ink: #0b0838;
-  --coal: #120d4a;
-  --graphite: #1b1468;
-  --line: #2e2480;
+  --ink: #0e0a4c;
+  --coal: #151060;
+  --graphite: #1e1778;
+  --line: #32278f;
   --text: #fffff3;
   --muted: #cfc9e2;
   --champagne: #eaa029;
@@ -80,10 +80,10 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 10;
-  background: rgba(13, 12, 11, 0.9);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid var(--line);
+  background: rgba(27, 20, 100, 0.22);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border-bottom: 1px solid rgba(255, 255, 243, 0.08);
 }
 .bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 32px; padding-block: 14px; }
 .wordmark {
