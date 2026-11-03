@@ -452,8 +452,8 @@ transform: translateZ(1px);
   --line: rgba(28, 22, 96, 0.22);
   --champagne: #d96a00;
   --heading: #5b2a8c;
-  background-color: var(--paper-cream);
-  background-image: var(--paper-grain);
+  background-color: #f6f1e3;
+  background-image: var(--paper-grain, none);
   color: #1c1660;
 }
 .page--text.page--right::after, .page--title.page--right::after, .page--colophon.page--right::after, .page--end.page--right::after {
@@ -472,13 +472,13 @@ transform: translateZ(1px);
 .page--title .toc__btn:hover { color: #c4005f; }
 .page--end .next-item:hover .next-item__t { color: #c4005f; }
 .page--colophon .col-mark { color: var(--heading); }
-.leaf__face--blank { background: var(--paper-cream) var(--paper-grain); }
+.leaf__face--blank { background: #f6f1e3 var(--paper-grain, none); }
 
 /* ---------- back cover: same cream paper look ---------- */
 .page.page--back {
   --heading: #5b2a8c;
-  background-color: var(--paper-cream);
-  background-image: var(--paper-grain);
+  background-color: #f6f1e3;
+  background-image: var(--paper-grain, none);
   background-size: auto;
 }
 .page--back .back__shade { display: none; }
