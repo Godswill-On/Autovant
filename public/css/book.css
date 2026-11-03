@@ -473,3 +473,17 @@ transform: translateZ(1px);
 .page--end .next-item:hover .next-item__t { color: #c4005f; }
 .page--colophon .col-mark { color: var(--heading); }
 .leaf__face--blank { background: var(--paper-cream) var(--paper-grain); }
+
+/* ---------- back cover: same cream paper look ---------- */
+.page.page--back {
+  --heading: #5b2a8c;
+  background-color: var(--paper-cream);
+  background-image: var(--paper-grain);
+  background-size: auto;
+}
+.page--back .back__shade { display: none; }
+.page--back::before { border-color: rgba(91, 42, 140, 0.35); }
+.page--back .cover__mark { color: var(--heading); }
+.page--back .back__line { color: #d96a00; }
+.page--back.page--right::after { background: linear-gradient(90deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%); }
+.page--back.page--left::after { background: linear-gradient(270deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%); }
