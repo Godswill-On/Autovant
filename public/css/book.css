@@ -442,3 +442,34 @@ transform: translateZ(1px);
 .gate__err { min-height: 1.4em; color: #ff9d86; font-size: 0.875rem; }
 .gate__btn { padding: 14px 20px; background: var(--champagne); color: var(--ink); border: 1px solid var(--champagne); border-radius: 0; font: 500 12px/1 var(--body); letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
 .gate__btn:hover { background: transparent; color: var(--champagne); }
+
+/* ---------- paper pages: cream paper with deep indigo and purple type ---------- */
+:root { --paper-cream: #f6f1e3; --paper-grain: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27240%27%20height=%27240%27%3E%3Cfilter%20id=%27n%27%3E%3CfeTurbulence%20type=%27fractalNoise%27%20baseFrequency=%27.75%27%20numOctaves=%273%27%20stitchTiles=%27stitch%27/%3E%3CfeColorMatrix%20values=%270%200%200%200%20.45%200%200%200%200%20.36%200%200%200%200%20.22%200%200%200%20.55%20-.12%27/%3E%3C/filter%3E%3Crect%20width=%27240%27%20height=%27240%27%20filter=%27url%28%23n%29%27%20opacity=%27.5%27/%3E%3C/svg%3E"); }
+
+.page--text, .page--title, .page--colophon, .page--end {
+  --text: #1c1660;
+  --muted: #5d5780;
+  --line: rgba(28, 22, 96, 0.22);
+  --champagne: #d96a00;
+  --heading: #5b2a8c;
+  background-color: var(--paper-cream);
+  background-image: var(--paper-grain);
+  color: #1c1660;
+}
+.page--text.page--right::after, .page--title.page--right::after, .page--colophon.page--right::after, .page--end.page--right::after {
+  background: linear-gradient(90deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%);
+}
+.page--text.page--left::after, .page--title.page--left::after, .page--colophon.page--left::after, .page--end.page--left::after {
+  background: linear-gradient(270deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%);
+}
+.page--text .b-h, .page--title .title-h, .page--end .end-h { color: var(--heading); }
+.page--text .b-p { color: #1c1660; }
+.page--text .b-quote p { color: var(--heading); }
+.page--text .b-quote cite { color: #c4005f; }
+.page--text .b-specs { background: rgba(28, 22, 96, 0.05); }
+.page--title .title-dek { color: #3a2f86; }
+.page--title .toc__btn { color: #1c1660; }
+.page--title .toc__btn:hover { color: #c4005f; }
+.page--end .next-item:hover .next-item__t { color: #c4005f; }
+.page--colophon .col-mark { color: var(--heading); }
+.leaf__face--blank { background: var(--paper-cream) var(--paper-grain); }
