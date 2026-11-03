@@ -16,7 +16,6 @@
     { name: 'Issues', slug: 'issues', tx: 'tx-paint', blurb: 'Full digital magazine editions and structured publications.' },
     { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-grid', blurb: 'Weekly featured editorial spotlights and deep dives.' },
     { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
-    { name: 'Installations', slug: 'installations', tx: 'tx-metal', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
     { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
     { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }
   ];
@@ -139,7 +138,7 @@
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
           h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX Magazine home' }, h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' })),
-          h('p', { class: 'tagline', text: 'Beyond the canvas.' })
+          h('p', { class: 'tagline', text: 'For the love of art & creativity.' })
         ),
         h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), h('div', { class: 'socials' }, social, tiktok)),
         h('div', null,
