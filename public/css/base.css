@@ -87,11 +87,21 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
 }
 .bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 32px; padding-block: 14px; }
 .wordmark {
-  font: 300 19px/1 var(--body);
-  letter-spacing: 0.42em;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.7em;
+  font: 600 19px/1 "Syne", var(--body);
+  letter-spacing: 0.3em;
   text-transform: uppercase;
   text-decoration: none;
+  white-space: nowrap;
   padding-block: 6px;
+}
+.wordmark .wm-a { font-weight: 700; }
+.wordmark .wm-b { font-weight: 400; font-size: 0.62em; letter-spacing: 0.34em; color: var(--champagne); }
+@media (max-width: 520px) {
+  .wordmark { font-size: 16px; letter-spacing: 0.22em; gap: 0.55em; }
+  .wordmark .wm-b { letter-spacing: 0.24em; }
 }
 .site nav { display: flex; gap: 26px; min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .site nav::-webkit-scrollbar { display: none; }

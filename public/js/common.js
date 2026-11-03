@@ -3,10 +3,20 @@
 (function () {
   'use strict';
 
+  // Wordmark font: Syne, a typeface made for an art centre. Loaded once here for every page.
+  if (!document.getElementById('holix-wordmark-font')) {
+    var fl = document.createElement('link');
+    fl.id = 'holix-wordmark-font';
+    fl.rel = 'stylesheet';
+    fl.href = 'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap';
+    document.head.appendChild(fl);
+  }
+
   var CATS = [
     { name: 'Issues', slug: 'issues', tx: 'tx-paint', blurb: 'Full digital magazine editions and structured publications.' },
     { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-grid', blurb: 'Weekly featured editorial spotlights and deep dives.' },
     { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
+    { name: 'Installations', slug: 'installations', tx: 'tx-metal', blurb: 'Site-specific works, spatial experiences, and large-scale pieces.' },
     { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
     { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }
   ];
@@ -94,7 +104,7 @@
       });
       header.className = 'site';
       header.append(h('div', { class: 'wrap bar' },
-        h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX home', text: 'HOLIX' }),
+        h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX Magazine home' }, h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' })),
         nav
       ));
     }
@@ -128,8 +138,8 @@
         tkIcon, h('span', { text: 'TikTok · @holixmagazine' }));
       footer.append(h('div', { class: 'wrap foot' },
         h('div', null,
-          h('a', { class: 'wordmark', href: '/', text: 'HOLIX' }),
-          h('p', { class: 'tagline', text: 'For the Love of Art and Creativity.' })
+          h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX Magazine home' }, h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' })),
+          h('p', { class: 'tagline', text: 'Beyond the canvas.' })
         ),
         h('div', null, h('span', { class: 'tag', text: 'Follow HOLIX' }), h('div', { class: 'socials' }, social, tiktok)),
         h('div', null,
@@ -139,6 +149,13 @@
       ));
     }
   }
+
+  // Pages with a hand-written wordmark (reader, editor, sign-in) get the same HOLIX Magazine lettering.
+  Array.prototype.forEach.call(document.querySelectorAll('.wordmark'), function (el) {
+    if (el.querySelector('.wm-a')) return;
+    el.textContent = '';
+    el.append(h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' }));
+  });
 
   // Fade the page out before opening a story, so the book appears to open.
   document.addEventListener('click', function (e) {
