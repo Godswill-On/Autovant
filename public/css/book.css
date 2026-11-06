@@ -447,14 +447,14 @@ transform: translateZ(1px);
 :root { --paper-cream: #f6f1e3; --paper-grain: url("data:image/svg+xml,%3Csvg%20xmlns=%27http://www.w3.org/2000/svg%27%20width=%27240%27%20height=%27240%27%3E%3Cfilter%20id=%27n%27%3E%3CfeTurbulence%20type=%27fractalNoise%27%20baseFrequency=%27.75%27%20numOctaves=%273%27%20stitchTiles=%27stitch%27/%3E%3CfeColorMatrix%20values=%270%200%200%200%20.45%200%200%200%200%20.36%200%200%200%200%20.22%200%200%200%20.55%20-.12%27/%3E%3C/filter%3E%3Crect%20width=%27240%27%20height=%27240%27%20filter=%27url%28%23n%29%27%20opacity=%27.5%27/%3E%3C/svg%3E"); }
 
 .page--text, .page--title, .page--colophon, .page--end {
-  --text: #1c1660;
-  --muted: #5d5780;
-  --line: rgba(28, 22, 96, 0.22);
+  --text: #141b5e;
+  --muted: #4a5380;
+  --line: rgba(20, 27, 94, 0.22);
   --champagne: #d96a00;
-  --heading: #5b2a8c;
+  --heading: #10185e;
   background-color: #f6f1e3;
   background-image: var(--paper-grain, none);
-  color: #1c1660;
+  color: #141b5e;
 }
 .page--text.page--right::after, .page--title.page--right::after, .page--colophon.page--right::after, .page--end.page--right::after {
   background: linear-gradient(90deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%);
@@ -463,12 +463,12 @@ transform: translateZ(1px);
   background: linear-gradient(270deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%);
 }
 .page--text .b-h, .page--title .title-h, .page--end .end-h { color: var(--heading); }
-.page--text .b-p { color: #1c1660; }
+.page--text .b-p { color: #141b5e; }
 .page--text .b-quote p { color: var(--heading); }
 .page--text .b-quote cite { color: #c4005f; }
-.page--text .b-specs { background: rgba(28, 22, 96, 0.05); }
-.page--title .title-dek { color: #3a2f86; }
-.page--title .toc__btn { color: #1c1660; }
+.page--text .b-specs { background: rgba(20, 27, 94, 0.05); }
+.page--title .title-dek { color: #1d2a78; }
+.page--title .toc__btn { color: #141b5e; }
 .page--title .toc__btn:hover { color: #c4005f; }
 .page--end .next-item:hover .next-item__t { color: #c4005f; }
 .page--colophon .col-mark { color: var(--heading); }
@@ -476,14 +476,41 @@ transform: translateZ(1px);
 
 /* ---------- back cover: same cream paper look ---------- */
 .page.page--back {
-  --heading: #5b2a8c;
+  --heading: #10185e;
   background-color: #f6f1e3;
   background-image: var(--paper-grain, none);
   background-size: auto;
 }
 .page--back .back__shade { display: none; }
-.page--back::before { border-color: rgba(91, 42, 140, 0.35); }
+.page--back::before { border-color: rgba(16, 24, 94, 0.35); }
 .page--back .cover__mark { color: var(--heading); }
 .page--back .back__line { color: #d96a00; }
 .page--back.page--right::after { background: linear-gradient(90deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%); }
 .page--back.page--left::after { background: linear-gradient(270deg, rgba(70, 45, 20, 0.30) 0, rgba(70, 45, 20, 0.08) 4%, rgba(70, 45, 20, 0) 12%); }
+
+/* ---------- artist links ---------- */
+.page .b-links { border: 1px solid rgba(16, 24, 94, 0.28); background: rgba(255, 252, 240, 0.45); }
+.page .b-links .b-specs__list { display: block; }
+.page a.b-link {
+  display: flex; align-items: center; gap: 0.85em; padding: 0.8em 0.95em;
+  border-bottom: 1px solid rgba(16, 24, 94, 0.16);
+  text-decoration: none; color: #141b5e; transition: background 0.2s ease;
+}
+.page a.b-link:last-child { border-bottom: 0; }
+.page a.b-link:hover { background: rgba(16, 24, 94, 0.06); }
+.b-link__ico {
+  flex: none; width: 2.3em; height: 2.3em; border-radius: 50%;
+  display: grid; place-items: center;
+  background: #10185e; color: #f6f1e3;
+  font: 500 0.8em/1 var(--mono); letter-spacing: 0.02em;
+}
+.b-link__txt { display: grid; gap: 0.2em; min-width: 0; flex: 1; }
+.page .b-link__p { font: 400 0.64em/1.3 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: #4a5380; }
+.page .b-link__v { font: 400 1.15em/1.25 var(--display); color: #10185e; overflow-wrap: anywhere; text-decoration: none; }
+.page .b-link__go {
+  flex: none; width: 1.9em; height: 1.9em; border-radius: 50%;
+  display: grid; place-items: center; font-size: 0.95em;
+  border: 1px solid rgba(16, 24, 94, 0.4); color: #10185e;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+.page a.b-link:hover .b-link__go { background: #10185e; color: #f6f1e3; }

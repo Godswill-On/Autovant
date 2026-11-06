@@ -119,16 +119,30 @@
           h('div', { class: 'b-specs__head', text: u.title || 'Follow the artist' }),
           h('div', { class: 'b-specs__list' }, u.rows.map(function (r) {
             return h('a', { class: 'b-link', href: r.url, target: '_blank', rel: 'noopener noreferrer' },
-              h('span', null, h('span', { class: 'b-link__p', text: r.platform }), h('span', { class: 'b-link__v', text: linkLabel(r.value) })),
+              h('span', { class: 'b-link__ico', 'aria-hidden': 'true', text: linkIcon(r.platform) }),
+              h('span', { class: 'b-link__txt' }, h('span', { class: 'b-link__p', text: r.platform }), h('span', { class: 'b-link__v', text: linkLabel(r) })),
               h('span', { class: 'b-link__go', 'aria-hidden': 'true', text: '↗' }));
           })));
     }
     return h('div');
   }
 
-  // Show a typed address without its https:// and www. so it reads like a handle.
-  function linkLabel(v) {
-    return String(v || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
+  // Short badge letters for each platform.
+  function linkIcon(p) {
+    return ({ 'Instagram': 'IG', 'TikTok': 'TT', 'X (Twitter)': 'X', 'Facebook': 'f', 'YouTube': 'YT', 'Behance': 'Be', 'Website': 'www' })[p] || '↗';
+  }
+
+  // Show a handle (@name) for social sites and a short address for websites; never the tracking part of a link.
+  function linkLabel(r) {
+    try {
+      var u = new URL(r.url);
+      var host = u.hostname.replace(/^www\./i, '');
+      var seg = u.pathname.split('/').filter(Boolean)[0] || '';
+      if (r.platform !== 'Website' && seg) return '@' + seg.replace(/^@/, '');
+      return host + (u.pathname.length > 1 ? u.pathname.replace(/\/$/, '') : '');
+    } catch (e) {
+      return String(r.value || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/[?#].*$/, '').replace(/\/$/, '');
+    }
   }
 
   /* ---------- measuring and pagination ---------- */
