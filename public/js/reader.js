@@ -82,6 +82,8 @@
         out.push({ kind: b.layout === 'fill' ? 'fill' : (b.layout === 'spread' ? 'spread' : 'fig'), block: b });
       } else if (b.type === 'specs' && b.rows && b.rows.length) {
         out.push({ kind: 'specs', title: b.title, rows: b.rows });
+      } else if (b.type === 'links' && b.rows && b.rows.length) {
+        out.push({ kind: 'links', title: b.title, rows: b.rows });
       }
     });
     return out;
@@ -112,8 +114,21 @@
               h('div', null, h('dt', { text: r.field }), h('dd', { text: r.value })),
               h('span', { class: CHIP[r.source] || 'chip', text: r.source }));
           })));
+      case 'links':
+        return h('section', { class: 'b-specs b-links' },
+          h('div', { class: 'b-specs__head', text: u.title || 'Follow the artist' }),
+          h('div', { class: 'b-specs__list' }, u.rows.map(function (r) {
+            return h('a', { class: 'b-link', href: r.url, target: '_blank', rel: 'noopener noreferrer' },
+              h('span', null, h('span', { class: 'b-link__p', text: r.platform }), h('span', { class: 'b-link__v', text: linkLabel(r.value) })),
+              h('span', { class: 'b-link__go', 'aria-hidden': 'true', text: '↗' }));
+          })));
     }
     return h('div');
+  }
+
+  // Show a typed address without its https:// and www. so it reads like a handle.
+  function linkLabel(v) {
+    return String(v || '').replace(/^https?:\/\/(www\.)?/i, '').replace(/\/$/, '');
   }
 
   /* ---------- measuring and pagination ---------- */
@@ -182,16 +197,16 @@
           tail: Object.assign({}, u, { text: words.slice(lo).join(' '), lead: false, cont: true })
         };
       }
-      if (u.kind === 'specs' && u.rows.length > 1) {
+      if ((u.kind === 'specs' || u.kind === 'links') && u.rows.length > 1) {
         hi = u.rows.length - 1;
         while (lo < hi) {
           mid = Math.ceil((lo + hi) / 2);
-          if (fits(cur.concat([{ kind: 'specs', title: u.title, rows: u.rows.slice(0, mid) }]))) lo = mid; else hi = mid - 1;
+          if (fits(cur.concat([Object.assign({}, u, { rows: u.rows.slice(0, mid) })]))) lo = mid; else hi = mid - 1;
         }
         if (lo < 1) return null;
         return {
-          head: { kind: 'specs', title: u.title, rows: u.rows.slice(0, lo) },
-          tail: { kind: 'specs', title: (u.title || 'Spec sheet') + ' (continued)', rows: u.rows.slice(lo) }
+          head: Object.assign({}, u, { rows: u.rows.slice(0, lo) }),
+          tail: Object.assign({}, u, { title: (u.title || (u.kind === 'links' ? 'Follow the artist' : 'Spec sheet')) + ' (continued)', rows: u.rows.slice(lo) })
         };
       }
       return null;
@@ -257,7 +272,7 @@
       h('div', { class: 'cover__bottom' },
         h('span', { class: 'tag', text: article.category }),
         h('h1', { class: 'cover__title', text: article.title }),
-        h('p', { class: 'cover__line', text: 'For the Love of Art and Creativity' }))
+        h('p', { class: 'cover__line', text: 'Beyond the canvas' }))
     );
     return page;
   }
@@ -298,7 +313,7 @@
   function colophonPage(index) {
     return h('section', { class: 'page page--colophon' },
       h('div', { class: 'page__body page__body--col' },
-        h('span', { class: 'col-mark', text: 'H' }),
+        h('span', { class: 'col-mark', text: 'A' }),
         h('p', { class: 'col-p', text: 'HOLIX celebrates contemporary art and the people who make it. Every work and fact we publish is labelled Official, Verified or Our view, so you always know where it came from.' })),
       foot(index));
   }

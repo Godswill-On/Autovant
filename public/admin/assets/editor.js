@@ -9,7 +9,8 @@
 
   var CATEGORY_NAMES = AV.CATS.map(function (c) { return c.name; });
   var SOURCES = ['Official', 'Verified', 'Our view'];
-  var TYPE_LABEL = { heading: 'Heading', text: 'Text', image: 'Photo', quote: 'Pull quote', specs: 'Work Specs' };
+  var PLATFORMS = ['Instagram', 'TikTok', 'X (Twitter)', 'Facebook', 'YouTube', 'Behance', 'Website'];
+  var TYPE_LABEL = { heading: 'Heading', text: 'Text', image: 'Photo', quote: 'Pull quote', specs: 'Work Specs', links: 'Artist Links' };
   var LAYOUTS = [
     ['fit', 'Inline, with the text'],
     ['fill', 'Full page'],
@@ -108,7 +109,17 @@
 
     function show(url) {
       preview.textContent = '';
-      if (url) preview.append(h('img', { src: url, alt: 'Selected artwork or photo' }));
+      if (url) {
+        var im = h('img', { src: url, alt: 'Selected artwork or photo' });
+        im.addEventListener('error', function () {
+          preview.textContent = '';
+          preview.append(h('div', { class: 'muted', style: 'padding:12px; text-align:center; word-break:break-all;' },
+            'This picture could not be loaded. ',
+            h('a', { href: url, target: '_blank', rel: 'noopener', text: 'Open its address' }),
+            '. Remove it and choose it again.'));
+        });
+        preview.append(im);
+      }
       else preview.append(h('span', { class: 'muted', text: 'No photo yet' }));
       clear.hidden = !url;
     }
@@ -201,6 +212,7 @@
       case 'text': return { type: 'text', text: '' };
       case 'quote': return { type: 'quote', text: '', cite: '' };
       case 'image': return { type: 'image', src: '', caption: '', alt: '', layout: 'fit', focus: 'center' };
+      case 'links': return { type: 'links', title: 'Follow the artist', rows: [{ platform: 'Instagram', value: '' }] };
       default: return { type: 'specs', title: 'Work specifications', rows: [{ field: '', value: '', source: 'Official' }] };
     }
   }
@@ -232,6 +244,32 @@
     ];
   }
 
+  function linkFields(b) {
+    var rows = h('div', { class: 'spec-rows' });
+    function draw() {
+      rows.textContent = '';
+      b.rows.forEach(function (r) {
+        var platform = select(PLATFORMS.map(function (p) { return [p, p]; }), r, 'platform');
+        platform.setAttribute('aria-label', 'Platform');
+        var value = bindInput(h('input', { type: 'text', maxlength: 200, placeholder: '@artistname or full link', 'aria-label': 'Handle or link' }), r, 'value');
+        var del = h('button', { type: 'button', class: 'icon-btn', title: 'Remove link', 'aria-label': 'Remove link', text: '✕' });
+        del.addEventListener('click', function () { b.rows.splice(b.rows.indexOf(r), 1); markDirty(); draw(); });
+        rows.append(h('div', { class: 'spec-row' }, platform, value, del));
+      });
+    }
+    draw();
+    var add = h('button', { type: 'button', class: 'btn btn--small', text: 'Add a link' });
+    add.addEventListener('click', function () { b.rows.push({ platform: 'Instagram', value: '' }); markDirty(); draw(); });
+    return [
+      fld('Title', bindInput(h('input', { type: 'text', maxlength: 80, placeholder: 'Follow the artist' }), b, 'title')),
+      h('div', { class: 'fld' },
+        h('span', { class: 'tag', text: 'Links' }),
+        rows,
+        h('span', { class: 'hint', text: 'Type a handle like @artistname or paste the full link. Readers tap a link to open the artist\'s page.' })),
+      add
+    ];
+  }
+
   function blockFields(b) {
     switch (b.type) {
       case 'heading':
@@ -252,6 +290,8 @@
             fld('Layout', select(LAYOUTS, b, 'layout')),
             fld('Keep this part when cropped', select(FOCUS, b, 'focus')))
         ];
+      case 'links':
+        return linkFields(b);
       default:
         return specFields(b);
     }
@@ -494,6 +534,7 @@
         addButton('Photo', 'image'),
         addButton('Pull quote', 'quote'),
         addButton('Work Specs', 'specs'),
+        addButton('Artist Links', 'links'),
         h('label', { class: 'btn btn--small' }, 'Add several photos', multi)));
 
     app.append(

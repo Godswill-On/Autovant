@@ -17,6 +17,34 @@
 
   var CATEGORIES = ['Issues', 'Feature Fridays', 'Visual Art', 'Installations', 'Curated Spaces', 'Exhibitions'];
   var SOURCES = ['Official', 'Verified', 'Our view'];
+  var PLATFORMS = ['Instagram', 'TikTok', 'X (Twitter)', 'Facebook', 'YouTube', 'Behance', 'Website'];
+  var PLATFORM_BASE = {
+    'Instagram': 'https://www.instagram.com/',
+    'TikTok': 'https://www.tiktok.com/@',
+    'X (Twitter)': 'https://x.com/',
+    'Facebook': 'https://www.facebook.com/',
+    'YouTube': 'https://www.youtube.com/@',
+    'Behance': 'https://www.behance.net/'
+  };
+
+  // An artist link may be typed as a full address or just a handle. Only http(s) addresses are kept.
+  function socialUrl(platform, value) {
+    var v = String(value || '').trim();
+    if (!v) return '';
+    var url;
+    if (/^https?:\/\//i.test(v)) url = v;
+    else if (platform === 'Website' || /^(www\.)?[a-z0-9-]+(\.[a-z0-9-]+)+(\/|$)/i.test(v)) url = 'https://' + v;
+    else {
+      var handle = v.replace(/^@/, '');
+      if (!/^[A-Za-z0-9._-]{1,60}$/.test(handle)) return '';
+      url = (PLATFORM_BASE[platform] || '') + handle;
+      if (!PLATFORM_BASE[platform]) return '';
+    }
+    try {
+      var u = new URL(url);
+      return u.protocol === 'https:' || u.protocol === 'http:' ? u.href : '';
+    } catch (e) { return ''; }
+  }
   // Photos may come from our storage bucket or from the bundled sample images.
   var PDF_RE = new RegExp('^' + SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/storage/v1/object/public/issues/[A-Za-z0-9._-]{1,120}$');
   var SRC_RE = new RegExp('^(' + SUPABASE_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '/storage/v1/object/public/' + BUCKET + '/[A-Za-z0-9._-]{1,120}|/img/[A-Za-z0-9._-]{1,100})$');
@@ -100,6 +128,16 @@
                 source: pick(r && r.source, SOURCES, 'Our view')
               };
             })
+          };
+        case 'links':
+          return {
+            type: 'links',
+            title: str(b.title, 80),
+            rows: (Array.isArray(b.rows) ? b.rows : []).slice(0, 12).map(function (r) {
+              var platform = pick(r && r.platform, PLATFORMS, 'Website');
+              var value = str(r && r.value, 200);
+              return { platform: platform, value: value, url: socialUrl(platform, value) };
+            }).filter(function (r) { return r.value && r.url; })
           };
         default:
           return null;
