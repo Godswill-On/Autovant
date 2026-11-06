@@ -286,7 +286,7 @@
       h('div', { class: 'cover__bottom' },
         h('span', { class: 'tag', text: article.category }),
         h('h1', { class: 'cover__title', text: article.title }),
-        h('p', { class: 'cover__line', text: 'Beyond the canvas' }))
+        h('p', { class: 'cover__line', text: 'For the love of art & creativity' }))
     );
     return page;
   }
@@ -327,7 +327,7 @@
   function colophonPage(index) {
     return h('section', { class: 'page page--colophon' },
       h('div', { class: 'page__body page__body--col' },
-        h('span', { class: 'col-mark', text: 'A' }),
+        h('span', { class: 'col-mark', text: 'H' }),
         h('p', { class: 'col-p', text: 'HOLIX celebrates contemporary art and the people who make it. Every work and fact we publish is labelled Official, Verified or Our view, so you always know where it came from.' })),
       foot(index));
   }
