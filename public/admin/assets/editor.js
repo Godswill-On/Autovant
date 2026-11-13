@@ -510,7 +510,7 @@
     });
 
     var title = bindInput(h('input', { type: 'text', id: 'f-title', maxlength: 200, placeholder: 'A headline for the feature' }), current, 'title');
-    var dek = autoGrow(bindInput(h('textarea', { rows: 3, maxlength: 400, placeholder: 'One or two sentences that introduce the story' }), current, 'dek'));
+    var dek = autoGrow(bindInput(h('textarea', { rows: 3, maxlength: 1500, placeholder: 'One or two sentences that introduce the story' }), current, 'dek'));
     var statusSel = select([['draft', 'Draft (private)'], ['published', 'Published (public)']], current, 'status');
     var catSel = select(CATEGORY_NAMES.map(function (c) { return [c, c]; }), current, 'category');
     var featured = h('input', { type: 'checkbox', id: 'f-featured' });

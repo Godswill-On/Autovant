@@ -282,7 +282,7 @@
     var fields = {
       title: title,
       category: pick(body.category, CATEGORIES, 'Issues'),
-      dek: str(body.dek, 400),
+      dek: str(body.dek, 1500),
       cover: SRC_RE.test(body.cover || '') ? body.cover : '',
       pdf_url: PDF_RE.test(body.pdf_url || '') ? body.pdf_url : '',
       pdf_pages: (Array.isArray(body.pdf_pages) ? body.pdf_pages : []).filter(function (u) { return PDF_RE.test(u || ''); }).slice(0, 400),

@@ -189,3 +189,4 @@ h1 em { font-style: italic; color: var(--champagne); }
 .photo--whole > img { object-fit: contain; }
 .photo--whole::after { display: none; }
 a:hover > .photo--whole > img { transform: none; }
+.story-body > p, .cover-dek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 4; overflow: hidden; }
