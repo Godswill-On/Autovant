@@ -36,13 +36,13 @@
   }
 
   // The two section cards. They start with the built-in art pictures; the editor can replace them.
-  var CARD_ART = { 'issues': '/img/art-issues.svg', 'feature-fridays': '/img/art-fridays.svg' };
+  var CARD_ART = { 'Editions': '/img/art-issues.svg', 'feature-fridays': '/img/art-fridays.svg' };
 
   function renderDiptych() {
     var box = document.getElementById('diptych');
     if (!box) return;
     box.textContent = '';
-    ['Issues', 'Feature Fridays'].forEach(function (catName) {
+    ['Editions', 'Feature Fridays'].forEach(function (catName) {
       var c = AV.catByName(catName);
       var card = h('a', { class: 'dip-card', href: '/section/' + c.slug, 'data-slug': c.slug },
         h('span', { class: 'tag', text: 'Section' }),
@@ -55,7 +55,7 @@
   }
 
   function applyCardPictures(f) {
-    var pics = { 'issues': f.sections.issues, 'feature-fridays': f.sections.fridays };
+    var pics = { 'editions': f.sections.issues, 'feature-fridays': f.sections.fridays };
     Object.keys(pics).forEach(function (slug) {
       var card = document.querySelector('.dip-card[data-slug="' + slug + '"]');
       if (card && pics[slug]) card.style.setProperty('--art', 'url("' + pics[slug] + '")');
