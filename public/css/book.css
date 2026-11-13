@@ -514,4 +514,4 @@ transform: translateZ(1px);
   transition: background 0.2s ease, color 0.2s ease;
 }
 .page a.b-link:hover .b-link__go { background: #10185e; color: #f6f1e3; }
-.title-dek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 9; overflow: hidden; }
+.title-dek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 9; line-clamp: 9; overflow: hidden; }
