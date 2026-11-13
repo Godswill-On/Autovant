@@ -80,7 +80,7 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
   position: sticky;
   top: env(safe-area-inset-top, 0px);
   z-index: 10;
-  background: rgba(27, 20, 100, 0.22);
+  background: rgba(22, 17, 83, 0.22);
   -webkit-backdrop-filter: blur(18px) saturate(150%);
   backdrop-filter: blur(18px) saturate(150%);
   border-bottom: 1px solid rgba(255, 255, 243, 0.08);
