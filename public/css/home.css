@@ -171,7 +171,7 @@ h1 em { font-style: italic; color: var(--champagne); }
   grid-template-columns: minmax(0, 1fr);
   padding: clamp(16px, 2.5vw, 32px);
   border: 1px solid var(--line);
-  background: var(--coal);
+  background: var(--bg-dark);
 }
 @media (min-width: 760px) { .cover.has-img { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); } }
 .cover.has-img::after { display: none; }
@@ -185,7 +185,7 @@ h1 em { font-style: italic; color: var(--champagne); }
 .cover-dek { color: var(--muted); font-size: 1.0625rem; line-height: 1.5; }
 
 /* Every section: show the whole cover picture inside the same box, never cropped */
-.photo--whole { background: var(--coal); }
+.photo--whole { background: var(--bg-dark);  }
 .photo--whole > img { object-fit: contain; }
 .photo--whole::after { display: none; }
 a:hover > .photo--whole > img { transform: none; }
