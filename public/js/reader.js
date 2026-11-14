@@ -790,7 +790,7 @@
     note.hidden = false;
     if (article.pdfUrl) {
       return (article.pdfPages && article.pdfPages.length ? openPageImages(article.pdfPages)
-        : (window.innerWidth < 880 ? Promise.reject(new Error('No page pictures for this issue yet.')) : openPdfBook(article.pdfUrl))).catch(function (err) {
+        : (window.innerWidth < 880 ? Promise.reject(new Error('No page pictures for this edition yet.')) : openPdfBook(article.pdfUrl))).catch(function (err) {
         console.error('PDF book failed:', err);
         if (book) { book.destroy(); book = null; }
         pdfDoc = null;

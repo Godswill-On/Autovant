@@ -151,7 +151,7 @@
       id: r.id,
       slug: r.slug,
       title: r.title,
-      category: r.category,
+      category: (r.category === 'Issues' || r.category === 'Edition') ? 'Editions' : r.category,
       dek: r.dek || '',
       cover: r.cover || '',
       featured: !!r.featured,
@@ -181,7 +181,7 @@
 
   function listPublished(category) {
     var q = sb.from('articles').select('*').eq('status', 'published');
-    if (category) q = q.eq('category', category);
+    if (category) q = category === 'Editions' ? q.in('category', ['Editions', 'Edition', 'Issues']) : q.eq('category', category);
     return q.order('published_at', { ascending: false, nullsFirst: false }).then(function (res) {
       if (res.error) throw explain(res.error);
       return res.data.map(fromRow).map(summary);
@@ -281,7 +281,7 @@
 
     var fields = {
       title: title,
-      category: pick(body.category, CATEGORIES, 'Issues'),
+      category: pick((body.category === 'Issues' || body.category === 'Edition') ? 'Editions' : body.category, CATEGORIES, 'Editions'),
       dek: str(body.dek, 1500),
       cover: SRC_RE.test(body.cover || '') ? body.cover : '',
       pdf_url: PDF_RE.test(body.pdf_url || '') ? body.pdf_url : '',

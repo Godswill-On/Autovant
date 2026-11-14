@@ -36,7 +36,7 @@
   }
 
   // The two section cards. They start with the built-in art pictures; the editor can replace them.
-  var CARD_ART = { 'Editions': '/img/art-issues.svg', 'feature-fridays': '/img/art-fridays.svg' };
+  var CARD_ART = { 'editions': '/img/art-issues.svg', 'feature-fridays': '/img/art-fridays.svg' };
 
   function renderDiptych() {
     var box = document.getElementById('diptych');

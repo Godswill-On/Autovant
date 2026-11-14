@@ -146,7 +146,7 @@
   var hasPages = !!(pdfPages && pdfPages.length);
   var status = h('span', { class: 'hint', style: 'display:block; margin-top:6px; word-break:break-all;' });
   var input = h('input', { type: 'file', accept: 'application/pdf,.pdf', class: 'file-input' });
-  var pickText = h('span', { text: pdfUrl ? 'Replace PDF Issue' : 'Upload PDF Issue' });
+  var pickText = h('span', { text: pdfUrl ? 'Replace PDF Edition' : 'Upload PDF Edition' });
   var pick = h('label', { class: 'btn btn--small btn--ghost', style: 'width:100%; text-align:center;' }, pickText, input);
   var prep = h('button', { type: 'button', class: 'btn btn--small', style: 'width:100%; margin-top:8px;', text: 'Prepare pages for phones' });
 
@@ -180,7 +180,7 @@
     status.textContent = 'Uploading PDF (' + sizeMb + ' MB)… Please wait.';
     uploadFile(file)
       .then(function (url) {
-        pickText.textContent = 'Replace PDF Issue';
+        pickText.textContent = 'Replace PDF Edition';
         return prepare(file, sizeMb, url);
       })
       .catch(function (e) {
@@ -558,7 +558,7 @@
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'PDF Magazine (Optional)' }),
             pdfUploader(current.pdf_url, current.pdf_pages, function (url, pages) { current.pdf_url = url; current.pdf_pages = pages || []; markDirty(); }),
-            h('p', { class: 'hint', text: 'Upload a complete pre-made PDF issue instead of writing manual blocks.' })),
+            h('p', { class: 'hint', text: 'Upload a complete pre-made PDF edition instead of writing manual blocks.' })),
           h('div', { class: 'side-card' },
             h('span', { class: 'tag', text: 'Cover photo' }),
             uploader(current.cover, function (url) { current.cover = url; markDirty(); }, 'Choose cover photo'),
@@ -577,7 +577,7 @@
 
   function showEditor(id) {
     if (!id) {
-      current = { title: '', category: 'Issues', dek: '', cover: '', pdf_url: '', pdf_pages: [], featured: false, status: 'draft', blocks: [] };
+      current = { title: '', category: 'Editions', dek: '', cover: '', pdf_url: '', pdf_pages: [], featured: false, status: 'draft', blocks: [] };
       dirty = false;
       drawEditor();
       return;
@@ -632,14 +632,14 @@
           h('div', { class: 'page-head__l' },
             h('a', { class: 'tag', href: '#/', text: '← All features' }),
             h('h1', { text: 'Homepage pictures' }),
-            h('p', { class: 'muted', text: 'The Featured Artist & Artwork section, and the pictures behind the Issues and Feature Fridays cards.' })),
+            h('p', { class: 'muted', text: 'The Featured Artist & Artwork section, and the pictures behind the Editions and Feature Fridays cards.' })),
           h('div', { class: 'page-head__r' }, saveBtn)),
         h('div', { style: 'display:grid; gap:20px; grid-template-columns:repeat(auto-fit,minmax(280px,1fr));' },
           card('Featured artist', 'artist', 'name', 'Artist name'),
           card('Featured artwork', 'artwork', 'title', 'Artwork title'),
           h('section', { class: 'side-card' },
-            h('span', { class: 'tag', text: 'Issues card picture' }),
-            h('p', { class: 'hint', text: 'Shown behind the Issues card on the homepage. Leave empty to use the built-in art picture.' }),
+            h('span', { class: 'tag', text: 'Editions card picture' }),
+            h('p', { class: 'hint', text: 'Shown behind the Editions card on the homepage. Leave empty to use the built-in art picture.' }),
             uploader(data.sections.issues, function (url) { data.sections.issues = url; markDirty(); }, 'Choose picture')),
           h('section', { class: 'side-card' },
             h('span', { class: 'tag', text: 'Feature Fridays card picture' }),

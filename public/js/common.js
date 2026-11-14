@@ -13,8 +13,8 @@
   }
 
   var CATS = [
-    { name: 'Issues', slug: 'issues', tx: 'tx-paint', blurb: 'Full digital magazine editions and structured publications.' },
-    { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-grid', blurb: 'Weekly featured editorial spotlights and deep dives.' },
+    { name: 'Editions', slug: 'editions', tx: 'tx-paint', blurb: 'Flip through every Holix edition, from our first issue to the latest.' },
+    { name: 'Feature Fridays', slug: 'feature-fridays', tx: 'tx-grid', blurb: 'Every creative we’ve spotlighted, and the stories behind their work.' },
     { name: 'Visual Art', slug: 'visual-art', tx: 'tx-paint', blurb: 'Paintings, sculptures, mixed media, and contemporary works.' },
     { name: 'Curated Spaces', slug: 'curated-spaces', tx: 'tx-grid', blurb: 'Bespoke interiors, galleries, and architectural environments.' },
     { name: 'Exhibitions', slug: 'exhibitions', tx: 'tx-leather', blurb: 'Features on milestone shows, curators, and cultural institutions.' }

@@ -182,3 +182,6 @@ create policy "editor inserts settings" on public.site_settings
 drop policy if exists "editor updates settings" on public.site_settings;
 create policy "editor updates settings" on public.site_settings
   for update to authenticated using (true) with check (true);
+
+-- 9. Rename the "Issues" section to "Editions" ---------------------------------
+update public.articles set category = 'Editions' where category in ('Issues', 'Edition');

@@ -2,7 +2,7 @@
 (function () {
   'use strict';
   var slug = decodeURIComponent(location.pathname.replace(/\/+$/, '').split('/').pop());
-  var cat = AV.catBySlug(slug);
+  var cat = AV.catBySlug(slug === 'issues' || slug === 'edition' ? 'editions' : slug);
   AV.mountChrome(cat ? cat.slug : '');
 
   var title = document.getElementById('sec-title');
