@@ -124,11 +124,29 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
 }
 .site nav a:hover { color: var(--text); }
 .site nav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--champagne); }
-@media (max-width: 860px) { .site nav { order: 3; flex: 1 1 100%; } }
-/* Phones: show every section link by wrapping, instead of hiding some off-screen */
-@media (max-width: 640px) {
-  .site nav { flex-wrap: wrap; overflow: visible; gap: 2px 20px; }
-  .site nav a { padding-block: 10px; }
+/* Menu button: only on tablets and phones */
+.nav-toggle { display: none; }
+@media (max-width: 860px) {
+  .bar { flex-wrap: wrap; gap: 0 16px; padding-block: 8px; }
+  .nav-toggle {
+    display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px;
+    width: 44px; height: 44px; margin-right: -10px; padding: 0;
+    background: transparent; border: 0; color: var(--text-light); cursor: pointer;
+  }
+  .nav-toggle span { display: block; width: 22px; height: 2px; background: currentColor; border-radius: 2px; transition: transform 0.25s ease, opacity 0.2s ease; }
+  .site.nav-open .nav-toggle span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .site.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+  .site.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+  .site nav {
+    order: 3; flex: 1 1 100%;
+    display: none; flex-direction: column; gap: 0; overflow: visible;
+    padding-block: 4px 12px; border-top: 1px solid rgba(255, 255, 243, 0.1);
+  }
+  .site.nav-open { background: rgba(8, 7, 31, 0.96); }
+  .site.nav-open nav { display: flex; }
+  .site nav a { font-size: 13px; padding-block: 16px; border-bottom: 1px solid rgba(255, 255, 243, 0.07); }
+  .site nav a:last-child { border-bottom-color: transparent; }
+  .site nav a[aria-current="page"] { color: var(--champagne); border-bottom-color: rgba(255, 255, 243, 0.07); }
 }
 html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 a, button { -webkit-tap-highlight-color: transparent; }

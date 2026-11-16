@@ -102,10 +102,25 @@
         nav.append(h('a', { href: '/section/' + c.slug, 'aria-current': c.slug === active ? 'page' : null, text: c.name }));
       });
       header.className = 'site';
+      nav.id = 'site-nav';
+      var toggle = h('button', { class: 'nav-toggle', type: 'button', 'aria-label': 'Open menu', 'aria-expanded': 'false', 'aria-controls': 'site-nav' },
+        h('span'), h('span'), h('span'));
       header.append(h('div', { class: 'wrap bar' },
         h('a', { class: 'wordmark', href: '/', 'aria-label': 'HOLIX Magazine home' }, h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' })),
+        toggle,
         nav
       ));
+      // Phones and tablets: the section links fold into a menu.
+      var setMenu = function (open) {
+        header.classList.toggle('nav-open', open);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.setAttribute('aria-label', open ? 'Close menu' : 'Open menu');
+      };
+      toggle.addEventListener('click', function () { setMenu(!header.classList.contains('nav-open')); });
+      nav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false); });
+      document.addEventListener('click', function (e) { if (!header.contains(e.target)) setMenu(false); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setMenu(false); });
+      window.addEventListener('resize', function () { if (window.innerWidth > 860) setMenu(false); });
     }
     var footer = document.getElementById('site-footer');
     if (footer) {

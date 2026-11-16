@@ -537,4 +537,5 @@ transform: translateZ(1px);
 .zbtn--pct { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; min-width: 52px; }
 .zbtn:hover:not(:disabled) { background: var(--champagne); color: var(--ink); border-color: var(--champagne); }
 .zbtn:disabled { opacity: 0.3; cursor: default; }
-@media (max-width: 560px) { .zoom-ctl { right: 8px; gap: 4px; } }
+/* Phones and tablets pinch to zoom, so the buttons are for computers only */
+@media (pointer: coarse), (max-width: 560px) { .zoom-ctl { display: none !important; } }
