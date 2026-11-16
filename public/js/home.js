@@ -65,7 +65,7 @@
   // Featured Artist & Artwork: two pictures the editor sets from the Homepage page of the editor.
   function renderSpotlight(f) {
     var items = [
-      { img: f.artist.image, title: f.artist.name, text: f.artist.caption, meta: 'Featured artist' },
+      { img: f.creative.image, title: f.creative.name, text: f.creative.caption, meta: 'Featured creative' },
       { img: f.artwork.image, title: f.artwork.title, text: f.artwork.caption, meta: 'Featured artwork' }
     ].filter(function (it) { return it.img || it.title; });
     if (!items.length) return;
