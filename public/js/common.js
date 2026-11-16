@@ -3,12 +3,12 @@
 (function () {
   'use strict';
 
-  // Wordmark font: Syne, a typeface made for an art centre. Loaded once here for every page.
+  // Wordmark font: Playfair Display bold italic (HOLIX) and Hanken Grotesk (MAGAZINE). Loaded once here for every page.
   if (!document.getElementById('holix-wordmark-font')) {
     var fl = document.createElement('link');
     fl.id = 'holix-wordmark-font';
     fl.rel = 'stylesheet';
-    fl.href = 'https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&display=swap';
+    fl.href = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,800;1,900&family=Hanken+Grotesk:wght@600;700&display=swap';
     document.head.appendChild(fl);
   }
 

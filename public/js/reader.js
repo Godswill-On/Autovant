@@ -433,6 +433,7 @@
     if (firstPage != null) book.goTo(book.stateForPage(firstPage), false);
     else if (state) book.goTo(state, false);
     updateUI();
+    if (zoomEl) { zoomEl.hidden = false; applyZoom(); }
   }
 
   function updateUI() {
@@ -477,9 +478,79 @@
     }
   }
 
+  /* ---------- zoom ---------- */
+
+  var zoom = 1;
+  var dragged = false;
+  var panX = 0;
+  var panY = 0;
+  var zoomEl = null;
+  var zoomOut = null;
+  var zoomIn = null;
+  var zoomPct = null;
+  var STEPS = [1, 1.5, 2, 2.5, 3];
+
+  function zoomMax() { return window.innerWidth < 880 ? 2.5 : 3; }
+
+  function clampPan() {
+    var r = stage.getBoundingClientRect();
+    var maxX = Math.max(0, (wrap.offsetWidth * zoom - r.width) / 2 + 24);
+    var maxY = Math.max(0, (wrap.offsetHeight * zoom - r.height) / 2 + 24);
+    panX = Math.max(-maxX, Math.min(maxX, panX));
+    panY = Math.max(-maxY, Math.min(maxY, panY));
+  }
+
+  function applyZoom() {
+    if (zoom <= 1.001) { zoom = 1; panX = 0; panY = 0; }
+    clampPan();
+    wrap.style.transform = zoom === 1 ? '' : 'translate(' + panX.toFixed(1) + 'px,' + panY.toFixed(1) + 'px) scale(' + zoom.toFixed(3) + ')';
+    stage.classList.toggle('is-zoomed', zoom > 1);
+    if (zoomPct) zoomPct.textContent = Math.round(zoom * 100) + '%';
+    if (zoomOut) zoomOut.disabled = zoom <= 1;
+    if (zoomIn) zoomIn.disabled = zoom >= zoomMax() - 0.001;
+  }
+
+  // Zoom to z2 keeping the point (cx, cy), in screen coordinates, where it is.
+  function zoomAt(z2, cx, cy) {
+    z2 = Math.max(1, Math.min(zoomMax(), z2));
+    var r = stage.getBoundingClientRect();
+    var fx = cx == null ? 0 : cx - (r.left + r.width / 2);
+    var fy = cy == null ? 0 : cy - (r.top + r.height / 2);
+    var ux = (fx - panX) / zoom;
+    var uy = (fy - panY) / zoom;
+    zoom = z2;
+    panX = fx - ux * zoom;
+    panY = fy - uy * zoom;
+    applyZoom();
+    quiet();
+  }
+
+  function zoomStep(dir) {
+    var i;
+    if (dir > 0) {
+      for (i = 0; i < STEPS.length; i++) if (STEPS[i] > zoom + 0.01) return zoomAt(STEPS[i]);
+      return zoomAt(zoomMax());
+    }
+    for (i = STEPS.length - 1; i >= 0; i--) if (STEPS[i] < zoom - 0.01) return zoomAt(STEPS[i]);
+    zoomAt(1);
+  }
+
+  function buildZoomControls() {
+    zoomOut = h('button', { class: 'zbtn', type: 'button', 'aria-label': 'Zoom out', text: '\u2212' });
+    zoomIn = h('button', { class: 'zbtn', type: 'button', 'aria-label': 'Zoom in', text: '+' });
+    zoomPct = h('button', { class: 'zbtn zbtn--pct', type: 'button', 'aria-label': 'Reset zoom', title: 'Reset zoom', text: '100%' });
+    zoomEl = h('div', { class: 'zoom-ctl', role: 'group', 'aria-label': 'Zoom', hidden: 'hidden' }, zoomOut, zoomPct, zoomIn);
+    stage.append(zoomEl);
+    zoomOut.addEventListener('click', function () { zoomStep(-1); });
+    zoomIn.addEventListener('click', function () { zoomStep(1); });
+    zoomPct.addEventListener('click', function () { zoomAt(1); });
+    applyZoom();
+  }
+
   /* ---------- input ---------- */
 
   function wire() {
+    buildZoomControls();
     btnPrev.addEventListener('click', function () { turn(-1); });
     btnNext.addEventListener('click', function () { turn(1); });
     closeEl.addEventListener('click', function (e) { e.preventDefault(); closeBook(); });
@@ -492,7 +563,10 @@
       else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); turn(-1); }
       else if (e.key === 'Home') { e.preventDefault(); book.goTo(0, true); quiet(); }
       else if (e.key === 'End') { e.preventDefault(); book.goTo(book.maxState, true); quiet(); }
-      else if (e.key === 'Escape') { closeBook(); }
+      else if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomStep(1); }
+      else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomStep(-1); }
+      else if (e.key === '0') { e.preventDefault(); zoomAt(1); }
+      else if (e.key === 'Escape') { if (zoom > 1) zoomAt(1); else closeBook(); }
     });
 
     // Click or tap a page to turn it. Links, buttons and selected text are left alone.
@@ -501,6 +575,7 @@
       var jump = e.target.closest('[data-page]');
       if (jump) { book.goToPage(Number(jump.getAttribute('data-page')), true); quiet(); return; }
       if (e.target.closest('a, button')) return;
+      if (zoom > 1.01 || dragged) { dragged = false; return; }
       if (window.getSelection && String(window.getSelection())) return;
       var leaf = e.target.closest('.leaf');
       if (!leaf) return;
@@ -512,25 +587,107 @@
       }
     });
 
-    // Swipe on touch screens.
-    var sx = null;
-    var sy = 0;
-    var st = 0;
+    // Touch and mouse on the stage: swipe to turn, pinch to zoom, drag to move a zoomed page.
+    var ptrs = {};
+    var count = 0;
+    var swipe = null;
+    var pinch = null;
+    var pan = null;
+
+    function pts() { return Object.keys(ptrs).map(function (k) { return ptrs[k]; }); }
+
     stage.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'mouse') return;
-      sx = e.clientX; sy = e.clientY; st = Date.now();
+      if (e.target.closest('.zoom-ctl')) return;
+      if (e.pointerType === 'mouse' && e.button !== 0) return;
+      if (!ptrs[e.pointerId]) count++;
+      ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (count === 2) {
+        var p = pts();
+        var r = stage.getBoundingClientRect();
+        var mx = (p[0].x + p[1].x) / 2 - (r.left + r.width / 2);
+        var my = (p[0].y + p[1].y) / 2 - (r.top + r.height / 2);
+        pinch = { d: Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1, z: zoom, ux: (mx - panX) / zoom, uy: (my - panY) / zoom };
+        swipe = null; pan = null;
+      } else if (count === 1) {
+        if (zoom > 1.01) {
+          pan = { x: e.clientX, y: e.clientY, px: panX, py: panY, moved: false };
+          if (e.pointerType === 'mouse') { try { stage.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } }
+        } else if (e.pointerType !== 'mouse') {
+          swipe = { x: e.clientX, y: e.clientY, t: Date.now() };
+        }
+      }
     });
-    stage.addEventListener('pointerup', function (e) {
-      if (e.pointerType === 'mouse' || sx == null) return;
-      var dx = e.clientX - sx;
-      var dy = e.clientY - sy;
-      sx = null;
-      if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && Date.now() - st < 900) turn(dx < 0 ? 1 : -1);
+
+    stage.addEventListener('pointermove', function (e) {
+      if (!ptrs[e.pointerId]) return;
+      ptrs[e.pointerId] = { x: e.clientX, y: e.clientY };
+      if (pinch && count === 2) {
+        var p = pts();
+        var r = stage.getBoundingClientRect();
+        var d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y) || 1;
+        var z2 = Math.max(1, Math.min(zoomMax(), pinch.z * d / pinch.d));
+        var mx = (p[0].x + p[1].x) / 2 - (r.left + r.width / 2);
+        var my = (p[0].y + p[1].y) / 2 - (r.top + r.height / 2);
+        zoom = z2;
+        panX = mx - pinch.ux * zoom;
+        panY = my - pinch.uy * zoom;
+        applyZoom();
+        quiet();
+      } else if (pan && count === 1) {
+        var dx = e.clientX - pan.x;
+        var dy = e.clientY - pan.y;
+        if (!pan.moved && Math.abs(dx) + Math.abs(dy) > 4) { pan.moved = true; stage.classList.add('is-panning'); }
+        if (pan.moved) { panX = pan.px + dx; panY = pan.py + dy; applyZoom(); }
+      }
     });
-    stage.addEventListener('pointercancel', function () { sx = null; });
+
+    function endPointer(e, cancelled) {
+      if (!ptrs[e.pointerId]) return;
+      delete ptrs[e.pointerId];
+      count = Math.max(0, count - 1);
+      if (pinch && count < 2) {
+        pinch = null;
+        if (zoom < 1.05) zoomAt(1);
+        // The finger that is still down should not start a swipe or a drag half way through.
+        swipe = null; pan = null;
+        return;
+      }
+      if (pan && count === 0) {
+        if (pan.moved) { dragged = true; setTimeout(function () { dragged = false; }, 60); }
+        pan = null;
+        stage.classList.remove('is-panning');
+        return;
+      }
+      if (swipe && count === 0) {
+        var dx = e.clientX - swipe.x;
+        var dy = e.clientY - swipe.y;
+        var fast = Date.now() - swipe.t < 900;
+        swipe = null;
+        if (!cancelled && zoom <= 1.01 && Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5 && fast) turn(dx < 0 ? 1 : -1);
+      }
+    }
+    stage.addEventListener('pointerup', function (e) { endPointer(e, false); });
+    stage.addEventListener('pointercancel', function (e) { endPointer(e, true); });
+    stage.addEventListener('lostpointercapture', function () { stage.classList.remove('is-panning'); });
+    stage.addEventListener('gesturestart', function (e) { e.preventDefault(); });
+
+    // Trackpad pinch and Ctrl/Cmd + wheel zoom; the wheel moves the page when zoomed in.
+    stage.addEventListener('wheel', function (e) {
+      if (!book) return;
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+        zoomAt(zoom * Math.exp(-e.deltaY * 0.01), e.clientX, e.clientY);
+      } else if (zoom > 1.01) {
+        e.preventDefault();
+        panX -= e.deltaX; panY -= e.deltaY;
+        applyZoom();
+      }
+    }, { passive: false });
 
     window.addEventListener('resize', debounce(function () {
-      if (!book || metrics().key === sizeKey) return;
+      if (!book) return;
+      applyZoom();
+      if (metrics().key === sizeKey) return;
       if (pdfDoc) Object.keys(pdfImgs).forEach(function (k) { releasePdfPage(Number(k)); });
       build(0, book.visiblePages()[0]);
     }, 250));
@@ -540,6 +697,7 @@
 
   function showError(title, text) {
     controls.hidden = true;
+    if (zoomEl) zoomEl.hidden = true;
     note.hidden = true;
     stage.append(h('div', { class: 'reader-error' },
       h('h1', { text: title }),

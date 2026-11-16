@@ -62,7 +62,8 @@ body.reader {
   display: grid;
   place-items: center;
   padding: 4px 12px;
-  touch-action: pan-y;
+  touch-action: none;
+  overflow: hidden;
 }
 
 .reader-note {
@@ -515,3 +516,25 @@ transform: translateZ(1px);
 }
 .page a.b-link:hover .b-link__go { background: #10185e; color: #f6f1e3; }
 .title-dek { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 9; line-clamp: 9; overflow: hidden; }
+/* ---------- zoom ---------- */
+.book-wrap { transform-origin: 50% 50%; }
+.stage.is-zoomed { cursor: grab; }
+.stage.is-panning { cursor: grabbing; user-select: none; -webkit-user-select: none; }
+.zoom-ctl {
+  position: absolute; right: 12px; bottom: 6px; z-index: 5;
+  display: flex; align-items: center; gap: 6px;
+}
+.zoom-ctl[hidden] { display: none; }
+.zbtn {
+  min-width: 36px; height: 36px; padding: 0 8px;
+  display: grid; place-items: center;
+  background: rgba(8, 7, 31, 0.6); color: var(--champagne);
+  border: 1px solid var(--champagne-deep); border-radius: 18px;
+  font: 500 17px/1 var(--body); cursor: pointer;
+  -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+.zbtn--pct { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; min-width: 52px; }
+.zbtn:hover:not(:disabled) { background: var(--champagne); color: var(--ink); border-color: var(--champagne); }
+.zbtn:disabled { opacity: 0.3; cursor: default; }
+@media (max-width: 560px) { .zoom-ctl { right: 8px; gap: 4px; } }
