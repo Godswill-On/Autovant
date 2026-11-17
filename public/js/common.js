@@ -171,6 +171,42 @@
     el.append(h('span', { class: 'wm-a', text: 'HOLIX' }), h('span', { class: 'wm-b', text: 'Magazine' }));
   });
 
+  // Long standfirsts show four lines on cards; "See more" opens the rest. The button only
+  // appears when the text really is cut off.
+  var MORE_SEL = '.story-body > p, .cover-dek';
+  function refreshMore() {
+    Array.prototype.forEach.call(document.querySelectorAll(MORE_SEL), function (p) {
+      var btn = p._moreBtn;
+      var open = p.classList.contains('is-open');
+      if (!btn) {
+        if (!(p.scrollHeight > p.clientHeight + 1)) return;
+        btn = h('button', { class: 'more', type: 'button', text: 'See more', 'aria-expanded': 'false' });
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          e.stopPropagation();
+          var now = p.classList.toggle('is-open');
+          btn.textContent = now ? 'See less' : 'See more';
+          btn.setAttribute('aria-expanded', now ? 'true' : 'false');
+        });
+        p._moreBtn = btn;
+        p.insertAdjacentElement('afterend', btn);
+      }
+      btn.hidden = !(open || p.scrollHeight > p.clientHeight + 1);
+    });
+  }
+  var moreTimer = null;
+  function queueMore() {
+    cancelAnimationFrame(moreTimer);
+    moreTimer = requestAnimationFrame(refreshMore);
+  }
+  if (window.MutationObserver) {
+    new MutationObserver(queueMore).observe(document.body, { childList: true, subtree: true });
+  }
+  window.addEventListener('resize', queueMore);
+  window.addEventListener('load', queueMore);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(queueMore);
+  queueMore();
+
   // Fade the page out before opening a story, so the book appears to open.
   document.addEventListener('click', function (e) {
     var a = e.target.closest && e.target.closest('a[data-book]');
