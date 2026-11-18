@@ -92,7 +92,7 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
   src: local("Hopscotch"), local("Hopscotch Regular"),
        url("/fonts/hopscotch.woff2") format("woff2"),
        url("/fonts/hopscotch.otf") format("opentype"),
-       url("/fonts/hopscotch.ttf") format("truetype");
+              url("/fonts/hopscotch.ttf") format("truetype");
   font-weight: 400;
   font-style: normal;
   font-display: swap;
