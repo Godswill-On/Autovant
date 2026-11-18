@@ -537,5 +537,12 @@ transform: translateZ(1px);
 .zbtn--pct { font: 500 11px/1 var(--mono); letter-spacing: 0.06em; min-width: 52px; }
 .zbtn:hover:not(:disabled) { background: var(--champagne); color: var(--ink); border-color: var(--champagne); }
 .zbtn:disabled { opacity: 0.3; cursor: default; }
-/* Phones and tablets pinch to zoom, so the buttons are for computers only */
-@media (pointer: coarse), (max-width: 560px) { .zoom-ctl { display: none !important; } }
+/* Phones and tablets: small buttons stacked down the right-hand side (+ on top, then reset, then -) */
+@media (pointer: coarse), (max-width: 560px) {
+  .zoom-ctl {
+    right: 4px; top: 50%; bottom: auto; transform: translateY(-50%);
+    flex-direction: column-reverse; gap: 6px;
+  }
+  .zbtn { min-width: 28px; width: 28px; height: 28px; padding: 0; border-radius: 14px; font-size: 15px; }
+  .zbtn--pct { min-width: 28px; width: 28px; height: 22px; border-radius: 11px; font-size: 8px; letter-spacing: 0; }
+}

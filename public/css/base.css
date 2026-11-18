@@ -86,19 +86,37 @@ a:hover > .link, .link:hover { border-bottom-color: var(--accent-pink); }
   border-bottom: 1px solid rgba(255, 255, 243, 0.08);
 }
 .bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px 32px; padding-block: 14px; }
+/* HOLIX lettering: Hopscotch. Put the font file in /public/fonts/ (hopscotch.woff2, .otf or .ttf). */
+@font-face {
+  font-family: "Hopscotch";
+  src: local("Hopscotch"), local("Hopscotch Regular"),
+       url("/fonts/hopscotch.woff2") format("woff2"),
+       url("/fonts/hopscotch.otf") format("opentype"),
+       url("/fonts/hopscotch.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
 .wordmark {
   display: inline-flex;
   align-items: flex-start;
   gap: 0.28em;
-  font: italic 800 30px/1 "Playfair Display", "Bodoni Moda", Georgia, serif;
-  letter-spacing: -0.01em;
+  font: 400 30px/1 "Hopscotch", var(--body);
   text-transform: uppercase;
   text-decoration: none;
   white-space: nowrap;
-  color: var(--text-light);
+  color: #fff;
   padding-block: 4px;
 }
-.wordmark .wm-a { font-style: italic; font-weight: 800; }
+.wordmark .wm-a {
+  font-family: "Hopscotch", var(--body);
+  font-style: normal;
+  font-weight: 400;
+  font-synthesis: none;
+  letter-spacing: 0.119em; /* tracking 119 */
+  margin-right: -0.119em;
+  color: #fff;
+}
 .wordmark .wm-b {
   font: 700 0.4em/1 var(--body);
   font-style: normal;
